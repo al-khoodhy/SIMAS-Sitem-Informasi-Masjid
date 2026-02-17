@@ -1,0 +1,80 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\KeuanganController;
+use App\Http\Controllers\Api\BeritaController;
+use App\Http\Controllers\Api\MustahikController;
+use App\Http\Controllers\Api\InventarisController;
+// Nanti tambahkan Controller lain di sini (KeuanganController, BeritaController, dll)
+
+/*
+|--------------------------------------------------------------------------
+| Rute Publik (Tanpa perlu login)
+|--------------------------------------------------------------------------
+*/
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/berita-publik', function() {
+    // Contoh rute untuk Landing Page mengambil data berita
+    return App\Models\Berita::where('status', 'dipublikasi')->get();
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Rute Terproteksi (Wajib Login bawa Token)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->group(function () {
+    
+    // Rute Umum untuk semua yang sudah login
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+
+    // 👑 KHUSUS DEVELOPER
+    Route::middleware('role:developer')->group(function () {
+        // Contoh: Route::apiResource('/users', UserController::class);
+        // Contoh: Route::get('/system-logs', [SystemController::class, 'logs']);
+    });
+
+    // 👳‍♂️ KHUSUS PANITIA & DEVELOPER (Manajemen Keuangan & Zakat)
+    Route::middleware('role:panitia,developer')->group(function () {
+        // Rute Keuangan
+        Route::post('/keuangan/pemasukan', [KeuanganController::class, 'storePemasukan']);
+        Route::post('/keuangan/pengeluaran', [KeuanganController::class, 'storePengeluaran']);
+        // 1. Rute untuk Ringkasan Dasbor (Chart/Angka Besar)
+        Route::get('/summary', [KeuanganController::class, 'summary']);
+
+        // 2. Rute untuk Tabel dan Tambah Transaksi Keuangan
+        Route::get('/keuangan/export-pdf', [\App\Http\Controllers\Api\KeuanganController::class, 'exportPdf']);
+        Route::get('/keuangan', [KeuanganController::class, 'index']);
+        Route::post('/keuangan', [KeuanganController::class, 'store']);
+        
+        // Rute Approval Berita
+        Route::post('/berita/{id}/approve', [BeritaController::class, 'approve']);
+        
+        // Rute Mustahik
+        Route::apiResource('/mustahik', MustahikController::class);
+        Route::get('/mustahik', [MustahikController::class, 'index']);
+        Route::post('/mustahik', [MustahikController::class, 'store']);
+
+        Route::apiResource('/kategori-keuangan', \App\Http\Controllers\Api\KategoriKeuanganController::class);
+        Route::apiResource('/campaign-donasi', \App\Http\Controllers\Api\CampaignDonasiController::class);
+       
+    });
+
+    // 🧑‍🎓 KHUSUS REMAJA, PANITIA, & DEVELOPER (Berita & Inventaris)
+    Route::middleware('role:remaja,panitia,developer')->group(function () {
+        // Rute Berita (Remaja hanya bisa submit draft)
+        Route::post('/berita', [BeritaController::class, 'store']);
+        Route::put('/berita/{id}', [BeritaController::class, 'update']);
+        
+        Route::get('/berita', [BeritaController::class, 'index']);
+        Route::post('/berita', [BeritaController::class, 'store']);
+        // Rute Inventaris
+        Route::apiResource('/inventaris', InventarisController::class);
+        
+    });
+
+});

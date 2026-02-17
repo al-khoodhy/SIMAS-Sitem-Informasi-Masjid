@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Cara baru mendefinisikan warna custom di Tailwind v4 */
+@theme {
+  --color-primary: #059669;
+  --color-secondary: #065f46;
+}
+
+body {
+    background-color: #f9fafb; /* Abu-abu terang untuk latar belakang */
+}
