@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\KeuanganController;
 use App\Http\Controllers\Api\BeritaController;
 use App\Http\Controllers\Api\MustahikController;
 use App\Http\Controllers\Api\InventarisController;
+use App\Http\Controllers\Api\ZakatController;
 // Nanti tambahkan Controller lain di sini (KeuanganController, BeritaController, dll)
 
 /*
@@ -34,7 +35,18 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 👑 KHUSUS DEVELOPER
     Route::middleware('role:developer')->group(function () {
-        // Contoh: Route::apiResource('/users', UserController::class);
+        Route::apiResource('/users', \App\Http\Controllers\Api\UserController::class);
+        // Keuangan
+    Route::put('/keuangan/{id}', [\App\Http\Controllers\Api\KeuanganController::class, 'update']);
+    Route::delete('/keuangan/{id}', [\App\Http\Controllers\Api\KeuanganController::class, 'destroy']);
+
+    // Berita
+    Route::put('/berita/{id}', [\App\Http\Controllers\Api\BeritaController::class, 'update']);
+    Route::delete('/berita/{id}', [\App\Http\Controllers\Api\BeritaController::class, 'destroy']);
+
+    // Penyaluran Zakat
+    Route::put('/penyaluran-zakat/{id}', [\App\Http\Controllers\Api\ZakatController::class, 'updatePenyaluran']);
+    Route::delete('/penyaluran-zakat/{id}', [\App\Http\Controllers\Api\ZakatController::class, 'destroyPenyaluran']);
         // Contoh: Route::get('/system-logs', [SystemController::class, 'logs']);
     });
 
@@ -62,6 +74,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/kategori-keuangan', \App\Http\Controllers\Api\KategoriKeuanganController::class);
         Route::apiResource('/campaign-donasi', \App\Http\Controllers\Api\CampaignDonasiController::class);
        
+
+        Route::get('/zakat/summary', [\App\Http\Controllers\Api\ZakatController::class, 'summaryTahunan']);
+        Route::get('/zakat/export-pdf', [\App\Http\Controllers\Api\ZakatController::class, 'exportPdf']);
+        Route::post('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'storePenyaluran']);
     });
 
     // 🧑‍🎓 KHUSUS REMAJA, PANITIA, & DEVELOPER (Berita & Inventaris)
@@ -74,6 +90,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/berita', [BeritaController::class, 'store']);
         // Rute Inventaris
         Route::apiResource('/inventaris', InventarisController::class);
+
+        Route::get('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'indexPenyaluran']);
+        Route::post('/penyaluran-zakat/{id}/konfirmasi', [\App\Http\Controllers\Api\ZakatController::class, 'konfirmasiPenyaluran']);
         
     });
 

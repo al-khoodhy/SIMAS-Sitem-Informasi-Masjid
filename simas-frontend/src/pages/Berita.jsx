@@ -8,7 +8,7 @@ export default function Berita() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
-
+    const [editId, setEditId] = useState(null);
     // Dapatkan data user yang sedang login dari LocalStorage
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -46,7 +46,21 @@ export default function Berita() {
         setFormData(prev => ({ ...prev, thumbnail: e.target.files[0] }));
     };
 
-    // Remaja submit draf berita
+    const handleEdit = (berita) => {
+        setEditId(berita.id);
+        setFormData({ judul: berita.judul, konten: berita.konten, link_youtube: berita.link_youtube || '', thumbnail: null });
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm("Yakin menghapus berita ini permanen?")) return;
+        try {
+            await api.delete(`/berita/${id}`);
+            fetchBerita();
+        } catch (error) { console.log(error);alert("Gagal menghapus berita."); }
+    };
+
+    // Submit draf baru atau update berita (untuk developer)
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitLoading(true);
@@ -58,14 +72,21 @@ export default function Berita() {
         if (formData.thumbnail) dataToSend.append('thumbnail', formData.thumbnail);
 
         try {
-            await api.post('/berita', dataToSend, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            
+            if (editId) {
+                await api.put(`/berita/${editId}`, dataToSend, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                alert("Berita berhasil diperbarui.");
+            } else {
+                await api.post('/berita', dataToSend, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                alert("Draf berita berhasil dikirim! Menunggu persetujuan panitia.");
+            }
             setIsModalOpen(false);
+            setEditId(null);
             setFormData({ judul: '', konten: '', link_youtube: '', thumbnail: null });
             fetchBerita();
-            alert("Draf berita berhasil dikirim! Menunggu persetujuan panitia.");
         } catch (error) {
             console.error(error);
             alert(error.response?.data?.message || "Terjadi kesalahan saat menyimpan berita.");
@@ -123,7 +144,7 @@ export default function Berita() {
                 
                 {/* Tombol Tulis Berita (Tersedia untuk semua role) */}
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => { setEditId(null); setFormData({ judul: '', konten: '', link_youtube: '', thumbnail: null }); setIsModalOpen(true); }}
                     className="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-lg flex items-center shadow-sm transition whitespace-nowrap"
                 >
                     <Plus className="w-5 h-5 mr-2" />
@@ -180,6 +201,12 @@ export default function Berita() {
                                         </button>
                                     </div>
                                 )}
+                                {user.role === 'developer' && (
+                                    <div className="mt-3 flex gap-2 border-t pt-3">
+                                        <button onClick={() => handleEdit(berita)} className="flex-1 text-blue-600 text-xs font-bold border rounded py-1 hover:bg-blue-50">Edit</button>
+                                        <button onClick={() => handleDelete(berita.id)} className="flex-1 text-red-600 text-xs font-bold border rounded py-1 hover:bg-red-50">Hapus</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -191,8 +218,8 @@ export default function Berita() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col">
                         <div className="flex justify-between items-center p-4 border-b bg-gray-50">
-                            <h3 className="font-bold text-lg text-gray-800">Tulis Artikel / Berita Baru</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <h3 className="font-bold text-lg text-gray-800">{editId ? 'Edit Berita' : 'Tulis Artikel / Berita Baru'}</h3>
+                            <button onClick={() => { setEditId(null); setFormData({ judul: '', konten: '', link_youtube: '', thumbnail: null }); setIsModalOpen(false); }} className="text-gray-400 hover:text-gray-600">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -248,9 +275,9 @@ export default function Berita() {
                         </div>
 
                         <div className="p-4 border-t bg-gray-50 flex gap-3 justify-end">
-                            <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">Batal</button>
+                            <button type="button" onClick={() => { setEditId(null); setFormData({ judul: '', konten: '', link_youtube: '', thumbnail: null }); setIsModalOpen(false); }} className="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">Batal</button>
                             <button type="submit" form="beritaForm" disabled={submitLoading} className="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-secondary transition font-medium flex items-center disabled:opacity-50">
-                                {submitLoading ? 'Menyimpan...' : 'Kirim Draf Berita'}
+                                {submitLoading ? 'Menyimpan...' : (editId ? 'Simpan Perubahan' : 'Kirim Draf Berita')}
                             </button>
                         </div>
                     </div>

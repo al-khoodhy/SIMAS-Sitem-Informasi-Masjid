@@ -124,4 +124,23 @@ class KeuanganController extends Controller
             ]
         ]);
     }
+
+    public function update(Request $request, $id)
+    {
+        $transaksi = TransaksiKeuangan::findOrFail($id);
+        $transaksi->update($request->except('bukti_foto')); // Update data teks
+
+        // Jika ada foto baru, timpa yang lama
+        if ($request->hasFile('bukti_foto')) {
+            $transaksi->bukti_foto = $request->file('bukti_foto')->store('bukti_transaksi', 'public');
+            $transaksi->save();
+        }
+        return response()->json(['success' => true, 'message' => 'Transaksi diperbarui']);
+    }
+
+    public function destroy($id)
+    {
+        TransaksiKeuangan::destroy($id);
+        return response()->json(['success' => true, 'message' => 'Transaksi dihapus']);
+    }
 }

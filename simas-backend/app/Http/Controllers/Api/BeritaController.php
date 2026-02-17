@@ -77,4 +77,22 @@ class BeritaController extends Controller
             'message' => 'Berita berhasil dipublikasikan ke Landing Page!'
         ]);
     }
+
+    public function update(Request $request, $id)
+    {
+        $berita = \App\Models\Berita::findOrFail($id);
+        $berita->update($request->except('thumbnail'));
+        
+        if ($request->hasFile('thumbnail')) {
+            $berita->thumbnail = $request->file('thumbnail')->store('berita_thumbnail', 'public');
+            $berita->save();
+        }
+        return response()->json(['success' => true, 'message' => 'Berita diperbarui']);
+    }
+
+    public function destroy($id)
+    {
+        \App\Models\Berita::destroy($id);
+        return response()->json(['success' => true, 'message' => 'Berita dihapus']);
+    }
 }

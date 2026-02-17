@@ -9,7 +9,7 @@ import Berita from './pages/Berita';
 import Zakat from './pages/Zakat';
 import Inventaris from './pages/Inventaris';
 import PengaturanKeuangan from './pages/PengaturanKeuangan';
-
+import ManajemenPengguna from './pages/ManajemenPengguna';
 function App() {
   return (
     <Router>
@@ -20,8 +20,7 @@ function App() {
         {/* Rute Terproteksi (Admin Layout) */}
         <Route element={<AdminLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          
-          {/* Placeholder untuk halaman selanjutnya */}
+          <Route path="/pengguna" element={<ManajemenPengguna />} />
           <Route path="/keuangan" element={<Keuangan />} />
           <Route path="/zakat" element={<Zakat />} />
           <Route path="/berita" element={<Berita />} />

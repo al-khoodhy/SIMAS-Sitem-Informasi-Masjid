@@ -1,9 +1,9 @@
 // src/components/AdminLayout.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Users, Newspaper, Package, LogOut, Menu } from 'lucide-react';
+import { LayoutDashboard, Wallet, Users, Newspaper, Package, LogOut, Menu, HandHeart } from 'lucide-react';
 import api from '../api/axios';
-import { Settings } from 'lucide-react';
+import { Settings, UserCog } from 'lucide-react';
 
 export default function AdminLayout() {
     const navigate = useNavigate();
@@ -39,8 +39,18 @@ export default function AdminLayout() {
     // RBAC: Menentukan menu berdasarkan Role
     const menuItems = [
         { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['developer', 'panitia', 'remaja'] },
+        { title: 'Manajemen Pengguna', icon: UserCog, path: '/pengguna', roles: ['developer'] },
         { title: 'Keuangan', icon: Wallet, path: '/keuangan', roles: ['developer', 'panitia'] },
-        { title: 'Data Zakat', icon: Users, path: '/zakat', roles: ['developer', 'panitia'] },
+        
+        // PERBAIKAN DI SINI: Tambahkan 'remaja' ke dalam array roles
+        // Kita gunakan logika ternary untuk mengubah judul menu sesuai Role
+        { 
+            title: user.role === 'remaja' ? 'Tugas Penyaluran' : 'Manajemen Zakat', 
+            icon: HandHeart, 
+            path: '/zakat', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
+        
         { title: 'Manajemen Berita', icon: Newspaper, path: '/berita', roles: ['developer', 'panitia', 'remaja'] },
         { title: 'Inventaris', icon: Package, path: '/inventaris', roles: ['developer', 'panitia', 'remaja'] },
         { title: 'Pengaturan Kas', icon: Settings, path: '/pengaturan-keuangan', roles: ['developer', 'panitia'] },
