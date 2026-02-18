@@ -11,7 +11,7 @@ import Inventaris from './pages/Inventaris';
 import PengaturanKeuangan from './pages/PengaturanKeuangan';
 import ManajemenPengguna from './pages/ManajemenPengguna';
 import LandingPage from './pages/LandingPage';
-
+import Agenda from './pages/Agenda';
 
 
 
@@ -28,6 +28,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/pengguna" element={<ManajemenPengguna />} />
           <Route path="/keuangan" element={<Keuangan />} />
+          <Route path="/Agenda" element={<Agenda />} />
           <Route path="/zakat" element={<Zakat />} />
           <Route path="/berita" element={<Berita />} />
           <Route path="/inventaris" element={<Inventaris />} />

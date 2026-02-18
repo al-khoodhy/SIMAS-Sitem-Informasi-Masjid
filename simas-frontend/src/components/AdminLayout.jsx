@@ -42,8 +42,7 @@ export default function AdminLayout() {
         { title: 'Manajemen Pengguna', icon: UserCog, path: '/pengguna', roles: ['developer'] },
         { title: 'Keuangan', icon: Wallet, path: '/keuangan', roles: ['developer', 'panitia'] },
         
-        // PERBAIKAN DI SINI: Tambahkan 'remaja' ke dalam array roles
-        // Kita gunakan logika ternary untuk mengubah judul menu sesuai Role
+        { title: 'Agenda', icon: Newspaper, path: '/agenda', roles: ['developer', 'panitia'] },
         { 
             title: user.role === 'remaja' ? 'Tugas Penyaluran' : 'Manajemen Zakat', 
             icon: HandHeart, 

@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 👳‍♂️ KHUSUS PANITIA & DEVELOPER (Manajemen Keuangan & Zakat)
     Route::middleware('role:panitia,developer')->group(function () {
+        Route::apiResource('/agenda', \App\Http\Controllers\Api\AgendaController::class);
         // Rute Keuangan
         Route::post('/keuangan/pemasukan', [KeuanganController::class, 'storePemasukan']);
         Route::post('/keuangan/pengeluaran', [KeuanganController::class, 'storePengeluaran']);

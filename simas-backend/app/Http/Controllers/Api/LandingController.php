@@ -7,6 +7,7 @@ use App\Models\TransaksiKeuangan;
 use App\Models\CampaignDonasi;
 use App\Models\Berita;
 use Illuminate\Http\Request;
+use App\Models\Agenda;
 
 class LandingController extends Controller
 {
@@ -29,6 +30,12 @@ class LandingController extends Controller
                         ->take(3)
                         ->get();
 
+        // 4. Ambil Agenda yang akan datang (Mulai hari ini ke depan)
+        $agenda = Agenda::where('waktu_pelaksanaan', '>=', now())
+                        ->orderBy('waktu_pelaksanaan', 'asc')
+                        ->take(4) // Ambil 4 agenda terdekat
+                        ->get();
+                        
         // Gabungkan semua data dalam satu respons
         return response()->json([
             'success' => true,
@@ -39,7 +46,8 @@ class LandingController extends Controller
                     'saldo_akhir' => $saldoAkhir
                 ],
                 'campaigns' => $campaigns,
-                'berita' => $berita
+                'berita' => $berita,
+                'agenda' => $agenda
             ]
         ], 200);
     }

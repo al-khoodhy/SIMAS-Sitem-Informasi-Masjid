@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { 
     ArrowRight, Wallet, TrendingUp, TrendingDown, Target, 
     Heart, Calendar, MapPin, Phone, Info, BookOpen, Users, 
-    Moon, Camera, Sparkles
+    Moon, Camera, Sparkles, Clock
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -12,9 +12,12 @@ export default function LandingPage() {
     const [data, setData] = useState({
         keuangan: { total_pemasukan: 0, total_pengeluaran: 0, saldo_akhir: 0 },
         campaigns: [],
-        berita: []
+        berita: [],
+        agenda: []
     });
     const [loading, setLoading] = useState(true);
+
+    const [timeLeft, setTimeLeft] = useState(null); // Ubah default menjadi null
 
     useEffect(() => {
         fetchPublicData();
@@ -31,16 +34,58 @@ export default function LandingPage() {
         }
     };
 
-    const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
-    const formatTanggal = (tanggal) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(tanggal));
+    // Logika Countdown (Hitung Mundur) yang Diperbaiki
+    useEffect(() => {
+        let interval; // Deklarasikan variabel interval di luar blok if
 
-    if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>;
-    }
+        if (data.agenda && data.agenda.length > 0) {
+            const targetDate = new Date(data.agenda[0].waktu_pelaksanaan).getTime();
+
+            // Fungsi untuk menghitung sisa waktu
+            const calculateTimeLeft = () => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    clearInterval(interval);
+                    setTimeLeft(null); // Acara sudah lewat atau sedang berlangsung
+                } else {
+                    setTimeLeft({
+                        d: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                        h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                        m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+                        s: Math.floor((distance % (1000 * 60)) / 1000)
+                    });
+                }
+            };
+
+            // Panggil sekali agar tidak ada jeda 1 detik saat komponen di-mount
+            calculateTimeLeft(); 
+            
+            // Set interval untuk memperbarui setiap detik
+            interval = setInterval(calculateTimeLeft, 1000); 
+        }
+
+        // Cleanup function (hanya akan menghapus interval jika interval sudah ada)
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [data.agenda]);
+
+    const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
+    const formatTanggal = (tanggal) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(tanggal));
+
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>;
+
+    // Ambil agenda pertama (untuk countdown) dan sisanya untuk list
+    const mainAgenda = data.agenda && data.agenda.length > 0 ? data.agenda[0] : null;
+    const otherAgendas = data.agenda && data.agenda.length > 1 ? data.agenda.slice(1) : [];
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans scroll-smooth">
-            {/* 1. NAVBAR DENGAN MENU NAVIGASI */}
+            {/* 1. NAVBAR */}
             <nav className="bg-white shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
@@ -48,15 +93,12 @@ export default function LandingPage() {
                             <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">M</div>
                             <span className="font-bold text-xl text-gray-800 tracking-tight">SIMAS Puloniti</span>
                         </div>
-                        
-                        {/* Menu Navigasi Desktop */}
                         <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                             <a href="#tentang" className="hover:text-primary transition">Tentang Kami</a>
-                            <a href="#program" className="hover:text-primary transition">Program</a>
+                            <a href="#agenda" className="hover:text-primary transition">Agenda</a>
                             <a href="#transparansi" className="hover:text-primary transition">Keuangan</a>
                             <a href="#galeri" className="hover:text-primary transition">Galeri</a>
                         </div>
-
                         <div>
                             <Link to="/login" className="text-primary font-semibold hover:bg-green-50 px-5 py-2.5 rounded-full transition flex items-center border border-primary text-sm">
                                 Masuk Pengurus <ArrowRight className="w-4 h-4 ml-2" />
@@ -69,9 +111,9 @@ export default function LandingPage() {
             {/* 2. HERO SECTION */}
             <div className="relative bg-primary overflow-hidden">
                 <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-center relative z-10">
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
-                        Selamat Datang di Portal Resmi <br/> Masjid Jami' Puloniti
+                        Selamat Datang di Portal Resmi <br/> Masjid An - Nur Puloniti
                     </h1>
                     <p className="text-green-100 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
                         Membangun umat yang berakhlak mulia melalui pendidikan, majelis ilmu, dan transparansi pengelolaan dana umat secara digital.
@@ -80,14 +122,87 @@ export default function LandingPage() {
                         <a href="#donasi" className="bg-white text-primary font-bold px-8 py-3.5 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
                             Salurkan Donasi
                         </a>
-                        <a href="#program" className="bg-transparent border border-white text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/10 transition-all">
-                            Lihat Kegiatan Kami
+                        <a href="#agenda" className="bg-transparent border border-white text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/10 transition-all">
+                            Lihat Jadwal Kajian
                         </a>
                     </div>
                 </div>
             </div>
 
-            {/* 3. TRANSPARANSI KAS MASJID */}
+            {/* 3. AGENDA & COUNTDOWN SECTION */}
+            <div id="agenda" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 mb-16">
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+                    {/* Sisi Kiri: Hitung Mundur */}
+                    <div className="bg-gray-900 text-white p-8 md:p-10 md:w-5/12 flex flex-col justify-center relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
+                        <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-widest uppercase mb-4">
+                            <Clock className="w-4 h-4" /> Agenda Terdekat
+                        </div>
+                        
+                        {mainAgenda ? (
+                            <>
+                                <h3 className="text-2xl md:text-3xl font-bold mb-2 leading-tight">{mainAgenda.judul}</h3>
+                                <p className="text-gray-400 text-sm mb-8"><MapPin className="w-3 h-3 inline mr-1"/> {mainAgenda.lokasi}</p>
+                                
+                                {timeLeft ? (
+                                    <div className="grid grid-cols-4 gap-2 text-center">
+                                        <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+                                            <span className="block text-2xl md:text-3xl font-bold">{timeLeft.d}</span>
+                                            <span className="text-[10px] text-gray-400 uppercase tracking-wide">Hari</span>
+                                        </div>
+                                        <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+                                            <span className="block text-2xl md:text-3xl font-bold">{timeLeft.h}</span>
+                                            <span className="text-[10px] text-gray-400 uppercase tracking-wide">Jam</span>
+                                        </div>
+                                        <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10">
+                                            <span className="block text-2xl md:text-3xl font-bold">{timeLeft.m}</span>
+                                            <span className="text-[10px] text-gray-400 uppercase tracking-wide">Menit</span>
+                                        </div>
+                                        <div className="bg-primary/80 rounded-lg p-3 backdrop-blur-sm border border-primary/50 text-white">
+                                            <span className="block text-2xl md:text-3xl font-bold">{timeLeft.s}</span>
+                                            <span className="text-[10px] text-green-100 uppercase tracking-wide">Detik</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-primary text-white p-4 rounded-lg font-bold text-center animate-pulse">
+                                        Acara Sedang Berlangsung / Telah Selesai
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-gray-400">Belum ada agenda terdekat.</p>
+                        )}
+                    </div>
+
+                    {/* Sisi Kanan: Daftar Agenda Lainya */}
+                    <div className="p-8 md:p-10 md:w-7/12 bg-white">
+                        <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                            <h3 className="text-lg font-bold text-gray-800">Jadwal Lainnya</h3>
+                            <span className="text-sm text-primary font-bold hover:underline cursor-pointer">Lihat Semua</span>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            {otherAgendas.length > 0 ? otherAgendas.map(item => (
+                                <div key={item.id} className="flex gap-4 items-start group">
+                                    <div className="bg-blue-50 text-blue-700 w-14 h-14 rounded-xl flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition">
+                                        <span className="text-xs font-bold uppercase">{new Date(item.waktu_pelaksanaan).toLocaleString('id', {month: 'short'})}</span>
+                                        <span className="text-xl font-black leading-none">{new Date(item.waktu_pelaksanaan).getDate()}</span>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-gray-800 text-base mb-1 group-hover:text-primary transition">{item.judul}</h4>
+                                        <p className="text-xs text-gray-500 mb-1"><Clock className="w-3 h-3 inline mr-1"/> {new Date(item.waktu_pelaksanaan).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})} WIB</p>
+                                        <p className="text-sm text-gray-600 line-clamp-1">{item.deskripsi}</p>
+                                    </div>
+                                </div>
+                            )) : (
+                                <p className="text-gray-500 text-sm italic">Tidak ada agenda tambahan dalam waktu dekat.</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 4. TRANSPARANSI KAS MASJID */}
             <div id="transparansi" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
                 <div className="bg-white rounded-2xl shadow-xl p-6 md:p-10 border border-gray-100">
                     <div className="text-center mb-8">
@@ -118,7 +233,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* 4. TENTANG KAMI */}
+            {/* 5. TENTANG KAMI */}
             <div id="tentang" className="bg-white py-20 mt-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -135,7 +250,6 @@ export default function LandingPage() {
                             </p>
                         </div>
                         <div className="relative">
-                            {/* Placeholder Gambar Masjid */}
                             <div className="aspect-video bg-gray-200 rounded-2xl overflow-hidden shadow-lg relative">
                                 <img src="https://images.unsplash.com/photo-1564683214965-3619addd900d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Masjid Jami Puloniti" className="w-full h-full object-cover" />
                             </div>
@@ -148,7 +262,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* 5. PROGRAM & KEGIATAN RUTIN */}
+            {/* 6. PROGRAM & KEGIATAN RUTIN */}
             <div id="program" className="bg-gray-50 py-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
@@ -215,7 +329,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* 6. GALERI & DOKUMENTASI */}
+            {/* 7. GALERI & DOKUMENTASI */}
             <div id="galeri" className="bg-white py-20 border-t border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between mb-10">
@@ -227,7 +341,6 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    {/* Grid Galeri Statis (Bisa diubah jadi dinamis di masa depan) */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="relative group overflow-hidden rounded-xl aspect-square">
                             <img src="https://images.unsplash.com/photo-1604868187858-8686d1494eb7?auto=format&fit=crop&w=500&q=80" alt="Pengajian" className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
@@ -245,7 +358,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* 7. PROGRAM WAKAF & DONASI (DINAMIS DARI API) */}
+            {/* 8. PROGRAM WAKAF & DONASI */}
             <div id="donasi" className="bg-gray-50 py-20 border-t border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
@@ -290,7 +403,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* 8. BERITA TERKINI (DINAMIS DARI API) */}
+            {/* 9. BERITA TERKINI */}
             <div className="bg-white py-20 border-t border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
@@ -326,7 +439,7 @@ export default function LandingPage() {
                 </div>
             </div>
 
-            {/* 9. FOOTER */}
+            {/* 10. FOOTER */}
             <footer className="bg-gray-900 text-gray-300 py-12">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
@@ -353,7 +466,7 @@ export default function LandingPage() {
                     </div>
                 </div>
                 <div className="border-t border-gray-800 mt-10 pt-8 text-center text-sm text-gray-500">
-                    &copy; {new Date().getFullYear()} Masjid Jami' Puloniti. Dirancang menggunakan React & Laravel.
+                    &copy; {new Date().getFullYear()} Masjid An-Nur Puloniti. Dirancang menggunakan React & Laravel.
                 </div>
             </footer>
         </div>
