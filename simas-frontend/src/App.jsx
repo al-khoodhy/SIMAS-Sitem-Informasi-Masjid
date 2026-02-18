@@ -12,7 +12,8 @@ import PengaturanKeuangan from './pages/PengaturanKeuangan';
 import ManajemenPengguna from './pages/ManajemenPengguna';
 import LandingPage from './pages/LandingPage';
 import Agenda from './pages/Agenda';
-
+import AllAgenda from './pages/AllAgenda';
+import NewsDetail from './pages/NewsDetail';
 
 
 function App() {
@@ -21,6 +22,8 @@ function App() {
       <Routes>
         {/* Rute Publik */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/agenda-lengkap" element={<AllAgenda />} />
+        <Route path="/berita/:id" element={<NewsDetail />} />
         <Route path="/login" element={<Login />} />
 
         {/* Rute Terproteksi (Admin Layout) */}

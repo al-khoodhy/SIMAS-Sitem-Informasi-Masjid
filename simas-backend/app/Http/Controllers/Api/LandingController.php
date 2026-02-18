@@ -35,7 +35,7 @@ class LandingController extends Controller
                         ->orderBy('waktu_pelaksanaan', 'asc')
                         ->take(4) // Ambil 4 agenda terdekat
                         ->get();
-                        
+
         // Gabungkan semua data dalam satu respons
         return response()->json([
             'success' => true,
@@ -50,5 +50,20 @@ class LandingController extends Controller
                 'agenda' => $agenda
             ]
         ], 200);
+    }
+    // Mengambil semua agenda yang akan datang
+    public function allAgenda()
+    {
+        $agendas = Agenda::where('waktu_pelaksanaan', '>=', now())
+                        ->orderBy('waktu_pelaksanaan', 'asc')
+                        ->get();
+        return response()->json(['success' => true, 'data' => $agendas], 200);
+    }
+
+    // Mengambil detail satu berita beserta penulisnya
+    public function newsDetail($id)
+    {
+        $berita = Berita::with('penulis:id,name')->findOrFail($id);
+        return response()->json(['success' => true, 'data' => $berita], 200);
     }
 }

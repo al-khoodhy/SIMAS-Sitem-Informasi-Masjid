@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\ZakatController;
 |--------------------------------------------------------------------------
 */
 Route::get('/public/landing', [\App\Http\Controllers\Api\LandingController::class, 'index']);
+Route::get('/public/berita/{id}', [\App\Http\Controllers\Api\LandingController::class, 'newsDetail']);
+Route::get('/public/agenda', [\App\Http\Controllers\Api\LandingController::class, 'allAgenda']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/berita-publik', function() {
     // Contoh rute untuk Landing Page mengambil data berita
