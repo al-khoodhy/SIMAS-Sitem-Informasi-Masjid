@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\ZakatController;
 | Rute Publik (Tanpa perlu login)
 |--------------------------------------------------------------------------
 */
+Route::get('/public/landing', [\App\Http\Controllers\Api\LandingController::class, 'index']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/berita-publik', function() {
     // Contoh rute untuk Landing Page mengambil data berita
@@ -82,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // 🧑‍🎓 KHUSUS REMAJA, PANITIA, & DEVELOPER (Berita & Inventaris)
     Route::middleware('role:remaja,panitia,developer')->group(function () {
+
+        Route::put('/profile', [\App\Http\Controllers\Api\UserController::class, 'updateProfile']);
         // Rute Berita (Remaja hanya bisa submit draft)
         Route::post('/berita', [BeritaController::class, 'store']);
         Route::put('/berita/{id}', [BeritaController::class, 'update']);

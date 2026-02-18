@@ -80,4 +80,29 @@ class UserController extends Controller
         $user->delete();
         return response()->json(['success' => true, 'message' => 'Pengguna berhasil dihapus']);
     }
+    // Fungsi Khusus Update Profil Sendiri
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user(); // Ambil data user yang sedang login
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'password' => 'nullable|string|min:6' // Password opsional
+        ]);
+
+        $user->name = $request->name;
+
+        // Jika form password diisi, enkripsi dan simpan password baru
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Profil berhasil diperbarui', 
+            'data' => $user
+        ]);
+    }
 }
