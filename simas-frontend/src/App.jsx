@@ -10,12 +10,18 @@ import Zakat from './pages/Zakat';
 import Inventaris from './pages/Inventaris';
 import PengaturanKeuangan from './pages/PengaturanKeuangan';
 import ManajemenPengguna from './pages/ManajemenPengguna';
+import LandingPage from './pages/LandingPage';
+
+
+
+
 function App() {
   return (
     <Router>
       <Routes>
         {/* Rute Publik */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
 
         {/* Rute Terproteksi (Admin Layout) */}
         <Route element={<AdminLayout />}>
