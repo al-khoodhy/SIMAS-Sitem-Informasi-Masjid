@@ -129,4 +129,12 @@ class MustahikController extends Controller
             'message' => 'Data Mustahik berhasil dihapus secara permanen'
         ], 200);
     }
+
+    // FUNGSI HAPUS MASSAL WARGA
+    public function massDestroy(Request $request)
+    {
+        $request->validate(['ids' => 'required|array']);
+        Mustahik::whereIn('id', $request->ids)->delete();
+        return response()->json(['success' => true, 'message' => count($request->ids) . ' data warga dihapus']);
+    }
 }

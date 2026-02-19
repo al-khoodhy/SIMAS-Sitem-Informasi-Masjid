@@ -10,5 +10,5 @@ class Agenda extends Model
     use HasFactory;
 
     // Pastikan baris ini ada agar Laravel mengizinkan data disimpan!
-    protected $fillable = ['judul', 'deskripsi', 'waktu_pelaksanaan', 'lokasi'];
+    protected $fillable = ['judul', 'deskripsi', 'waktu_pelaksanaan', 'waktu_selesai', 'lokasi'];
 }

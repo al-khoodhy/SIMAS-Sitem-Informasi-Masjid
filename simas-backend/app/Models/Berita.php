@@ -8,10 +8,7 @@ class Berita extends Model
 {
     protected $table = 'berita';
     
-    protected $fillable = [
-        'penulis_id', 'disetujui_oleh', 'judul', 'slug', 
-        'konten', 'thumbnail', 'link_youtube', 'status', 'published_at'
-    ];
+    protected $fillable = ['judul', 'konten', 'thumbnail', 'link_youtube', 'penulis_id', 'status', 'views'];
 
     // Relasi ke User yang menulis (Remaja)
     public function penulis()

@@ -19,6 +19,7 @@ Route::get('/public/landing', [\App\Http\Controllers\Api\LandingController::clas
 Route::get('/public/berita/{id}', [\App\Http\Controllers\Api\LandingController::class, 'newsDetail']);
 Route::get('/public/agenda', [\App\Http\Controllers\Api\LandingController::class, 'allAgenda']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/public/berita-semua', [\App\Http\Controllers\Api\LandingController::class, 'allBerita']);
 Route::get('/berita-publik', function() {
     // Contoh rute untuk Landing Page mengambil data berita
     return App\Models\Berita::where('status', 'dipublikasi')->get();
@@ -53,9 +54,16 @@ Route::middleware('auth:sanctum')->group(function () {
         // Contoh: Route::get('/system-logs', [SystemController::class, 'logs']);
     });
 
+
+
+
     // 👳‍♂️ KHUSUS PANITIA & DEVELOPER (Manajemen Keuangan & Zakat)
     Route::middleware('role:panitia,developer')->group(function () {
+        Route::get('/dashboard-stats', [\App\Http\Controllers\Api\DashboardController::class, 'getStats']);
+
         Route::apiResource('/agenda', \App\Http\Controllers\Api\AgendaController::class);
+        Route::post('/agenda/mass-destroy', [\App\Http\Controllers\Api\AgendaController::class, 'massDestroy']);
+        
         // Rute Keuangan
         Route::post('/keuangan/pemasukan', [KeuanganController::class, 'storePemasukan']);
         Route::post('/keuangan/pengeluaran', [KeuanganController::class, 'storePengeluaran']);
@@ -74,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('/mustahik', MustahikController::class);
         Route::get('/mustahik', [MustahikController::class, 'index']);
         Route::post('/mustahik', [MustahikController::class, 'store']);
+        Route::post('/mustahik/mass-destroy', [MustahikController::class, 'massDestroy']);
 
         Route::apiResource('/kategori-keuangan', \App\Http\Controllers\Api\KategoriKeuanganController::class);
         Route::apiResource('/campaign-donasi', \App\Http\Controllers\Api\CampaignDonasiController::class);
@@ -81,7 +90,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/zakat/summary', [\App\Http\Controllers\Api\ZakatController::class, 'summaryTahunan']);
         Route::get('/zakat/export-pdf', [\App\Http\Controllers\Api\ZakatController::class, 'exportPdf']);
+
         Route::post('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'storePenyaluran']);
+        Route::post('/penyaluran-zakat/mass-destroy', [\App\Http\Controllers\Api\ZakatController::class, 'massDestroyPenyaluran']);
+        Route::post('/penyaluran-zakat/mass-update', [\App\Http\Controllers\Api\ZakatController::class, 'massUpdatePenyaluran']);
+
     });
 
     // 🧑‍🎓 KHUSUS REMAJA, PANITIA, & DEVELOPER (Berita & Inventaris)
