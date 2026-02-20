@@ -1,18 +1,28 @@
-// src/pages/LandingPage.jsx
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-    ArrowRight, Wallet, TrendingUp, TrendingDown, Target, 
-    Heart, Calendar, MapPin, Phone, Info, BookOpen, Users, 
-    Moon, Camera, Sparkles, Clock, Eye
-} from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
 import api from '../api/axios';
 
+// 1. EAGER LOADING (Dimuat langsung karena berada di tampilan awal)
+import Navbar from '../components/landing/Navbar';
+import HeroSection from '../components/landing/HeroSection';
+import AgendaSection from '../components/landing/AgendaSection';
+
+// 2. LAZY LOADING / CODE SPLITTING (Dipecah menjadi file chunk terpisah oleh bundler)
+const TransparansiSection = React.lazy(() => import('../components/landing/TransparansiSection'));
+const DonasiSection = React.lazy(() => import('../components/landing/DonasiSection'));
+const TentangSection = React.lazy(() => import('../components/landing/TentangSection'));
+const ProgramSection = React.lazy(() => import('../components/landing/ProgramSection'));
+const GaleriSection = React.lazy(() => import('../components/landing/GaleriSection'));
+const BeritaSection = React.lazy(() => import('../components/landing/BeritaSection'));
+const Footer = React.lazy(() => import('../components/landing/Footer'));
+
 export default function LandingPage() {
-    const [data, setData] = useState({ keuangan: { total_pemasukan: 0, total_pengeluaran: 0, saldo_akhir: 0 }, campaigns: [], berita: [], agenda: [] });
+    const [data, setData] = useState({ 
+        keuangan: { total_pemasukan: 0, total_pengeluaran: 0, saldo_akhir: 0 }, 
+        campaigns: [], 
+        berita: [], 
+        agenda: [] 
+    });
     const [loading, setLoading] = useState(true);
-    const [timeLeft, setTimeLeft] = useState(null);
-    const [eventStatus, setEventStatus] = useState('upcoming');
 
     useEffect(() => { 
         fetchPublicData(); 
@@ -20,7 +30,6 @@ export default function LandingPage() {
 
     const fetchPublicData = async () => {
         try { 
-            // Cukup panggil endpoint tanpa embel-embel parameter
             const response = await api.get('/public/landing'); 
             setData(response.data.data); 
         } 
@@ -28,488 +37,43 @@ export default function LandingPage() {
         finally { setLoading(false); }
     };
 
-    // LOGIKA COUNTDOWN (HITUNG MUNDUR) TETAP SAMA SEPERTI SEBELUMNYA
-    useEffect(() => {
-        let interval;
-        if (data.agenda && data.agenda.length > 0) {
-            const startDate = new Date(data.agenda[0].waktu_pelaksanaan).getTime();
-            // Jika waktu selesai kosong, anggap durasi acara 2 jam dari mulai
-            const endDate = data.agenda[0].waktu_selesai ? new Date(data.agenda[0].waktu_selesai).getTime() : startDate + (2 * 60 * 60 * 1000);
-
-            const calculateTimeLeft = () => {
-                const now = new Date().getTime();
-                const distanceToStart = startDate - now;
-                const distanceToEnd = endDate - now;
-
-                if (distanceToStart > 0) {
-                    // Acara Belum Mulai
-                    setEventStatus('upcoming');
-                    setTimeLeft({
-                        d: Math.floor(distanceToStart / (1000 * 60 * 60 * 24)),
-                        h: Math.floor((distanceToStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                        m: Math.floor((distanceToStart % (1000 * 60 * 60)) / (1000 * 60)),
-                        s: Math.floor((distanceToStart % (1000 * 60)) / 1000)
-                    });
-                } else if (distanceToStart <= 0 && distanceToEnd > 0) {
-                    // Acara Sedang Berlangsung
-                    setEventStatus('ongoing');
-                    setTimeLeft(null);
-                } else {
-                    // Acara Telah Selesai
-                    setEventStatus('finished');
-                    setTimeLeft(null);
-                    clearInterval(interval);
-                }
-            };
-            
-            calculateTimeLeft(); 
-            interval = setInterval(calculateTimeLeft, 1000); 
-        }
-        return () => { if (interval) clearInterval(interval); };
-    }, [data.agenda]);
-
-
-
-    const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
-    const formatTanggal = (tanggal) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(tanggal));
-
-    if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>;
-
-    const mainAgenda = data.agenda && data.agenda.length > 0 ? data.agenda[0] : null;
-    const otherAgendas = data.agenda && data.agenda.length > 1 ? data.agenda.slice(1) : [];
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans scroll-smooth">
-            {/* 1. NAVBAR */}
-            <nav className="bg-white shadow-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16 items-center">
-                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo(0,0)}>
-                            <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">A</div>
-                            <span className="font-bold text-xl text-gray-800 tracking-tight">Masjid An-Nur</span>
-                        </div>
-                        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-                            <a href="#donasi" className="hover:text-primary transition">Donasi</a>
-                            <a href="#transparansi" className="hover:text-primary transition">Keuangan</a>
-                            <a href="#tentang" className="hover:text-primary transition">Tentang</a>
-                            <a href="#program" className="hover:text-primary transition">Program</a>
-                            <a href="#galeri" className="hover:text-primary transition">Galeri</a>
-                        </div>
-                        <div>
-                            <Link to="/login" className="text-primary font-semibold hover:bg-green-50 px-5 py-2.5 rounded-full transition flex items-center border border-primary text-sm">
-                                Masuk Pengurus <ArrowRight className="w-4 h-4 ml-2" />
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            {/* OPTIMASI: NATIVE REACT 19 METADATA (Tanpa React Helmet) */}
+            <title>Portal Resmi Masjid An-Nur Puloniti</title>
+            <meta name="description" content="Portal resmi Masjid An-Nur Puloniti. Menampilkan jadwal kajian, transparansi keuangan, donasi, dan program kegiatan jamaah." />
+            <meta name="keywords" content="Masjid An-Nur, Masjid Puloniti, Jadwal Kajian Mojokerto, Transparansi Kas Masjid, Donasi Masjid" />
+            <meta property="og:title" content="Portal Resmi Masjid An-Nur Puloniti" />
+            <meta property="og:description" content="Mari memakmurkan masjid dengan transparansi dan program yang bermanfaat bagi umat." />
+            <meta property="og:type" content="website" />
 
-            {/* 2. HERO SECTION */}
-            <div className="relative bg-primary overflow-hidden">
-                <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-center relative z-10">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-6 leading-tight">
-                        Selamat Datang di Portal Resmi <br/> Masjid An-Nur Puloniti
-                    </h1>
-                    <p className="text-green-100 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-                        Membangun umat yang berakhlak mulia melalui pendidikan, majelis ilmu, dan transparansi pengelolaan dana umat secara digital.
-                    </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
-                        <a href="#donasi" className="bg-white text-primary font-bold px-8 py-3.5 rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
-                            Salurkan Donasi
-                        </a>
-                        <a href="#agenda" className="bg-transparent border border-white text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/10 transition-all">
-                            Lihat Jadwal Kajian
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <Navbar />
+            
+            <main>
+                <HeroSection />
+                <AgendaSection agendaData={data.agenda} />
 
-{/* 3. AGENDA & COUNTDOWN SECTION */}
-<div id="agenda" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 mb-12">
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
-                    {/* Sisi Kiri: Hitung Mundur & Status */}
-                    <div className="bg-gray-900 text-white p-8 md:p-10 md:w-5/12 flex flex-col justify-center relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full blur-2xl transform translate-x-10 -translate-y-10"></div>
-                        <div className="flex items-center gap-2 text-primary font-bold text-sm tracking-widest uppercase mb-4">
-                            <Clock className="w-4 h-4" /> Agenda Terdekat
-                        </div>
-                        
-                        {mainAgenda ? (
-                            <>
-                                <h3 className="text-2xl md:text-3xl font-bold mb-2 leading-tight">{mainAgenda.judul}</h3>
-                                <p className="text-gray-400 text-sm mb-8"><MapPin className="w-3 h-3 inline mr-1"/> {mainAgenda.lokasi}</p>
-                                
-                                {/* Tampilan Dinamis Berdasarkan Status Event */}
-                                {eventStatus === 'upcoming' && timeLeft && (
-                                    <div className="grid grid-cols-4 gap-2 text-center">
-                                        <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10"><span className="block text-2xl md:text-3xl font-bold">{timeLeft.d}</span><span className="text-[10px] text-gray-400 uppercase tracking-wide">Hari</span></div>
-                                        <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10"><span className="block text-2xl md:text-3xl font-bold">{timeLeft.h}</span><span className="text-[10px] text-gray-400 uppercase tracking-wide">Jam</span></div>
-                                        <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm border border-white/10"><span className="block text-2xl md:text-3xl font-bold">{timeLeft.m}</span><span className="text-[10px] text-gray-400 uppercase tracking-wide">Menit</span></div>
-                                        <div className="bg-primary/80 rounded-lg p-3 backdrop-blur-sm border border-primary/50 text-white"><span className="block text-2xl md:text-3xl font-bold">{timeLeft.s}</span><span className="text-[10px] text-green-100 uppercase tracking-wide">Detik</span></div>
-                                    </div>
-                                )}
-                                
-                                {eventStatus === 'ongoing' && (
-                                    <div className="bg-blue-600 text-white p-4 rounded-lg font-bold text-center animate-pulse shadow-lg border border-blue-400">
-                                        🔴 ACARA SEDANG BERLANGSUNG
-                                    </div>
-                                )}
+                {/* OPTIMASI: Suspense akan merender fallback (bisa berupa skeleton loading) 
+                    sementara browser mengunduh script komponen di bawah secara asinkron */}
+                <Suspense fallback={<div className="py-20 text-center text-gray-400">Memuat bagian ini...</div>}>
+                    <TransparansiSection keuanganData={data.keuangan} />
+                    <DonasiSection campaignsData={data.campaigns} />
+                    <TentangSection />
+                    <ProgramSection />
+                    <GaleriSection />
+                    <BeritaSection beritaData={data.berita} />
+                </Suspense>
+            </main>
 
-                                {eventStatus === 'finished' && (
-                                    <div className="bg-gray-800 text-gray-400 p-4 rounded-lg font-bold text-center border border-gray-700">
-                                        Acara Telah Selesai
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <p className="text-gray-400">Belum ada agenda terdekat.</p>
-                        )}
-                    </div>
-
-                    {/* Sisi Kanan: Daftar Agenda Lainnya (DIBATASI 2 ITEM & SCROLL) */}
-                    <div className="p-8 md:p-10 md:w-7/12 bg-white flex flex-col">
-                        <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-                            <h3 className="text-lg font-bold text-gray-800">Jadwal Lainnya</h3>
-                            <Link to="/agenda-lengkap" className="text-sm text-primary font-bold hover:underline cursor-pointer flex items-center">
-                                Lihat Semua <ArrowRight className="w-3 h-3 ml-1" />
-                            </Link>
-                        </div>
-                        
-                        {/* WADAH SCROLL DENGAN TINGGI MAKSIMAL ~2 ITEM (150px) */}
-                        <div className="space-y-4 max-h-[150px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
-                            {otherAgendas.length > 0 ? otherAgendas.map(item => (
-                                <div key={item.id} className="flex gap-4 items-start group">
-                                    <div className="bg-blue-50 text-blue-700 w-14 h-14 rounded-xl flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:text-white transition">
-                                        <span className="text-xs font-bold uppercase">{new Date(item.waktu_pelaksanaan).toLocaleString('id', {month: 'short'})}</span>
-                                        <span className="text-xl font-black leading-none">{new Date(item.waktu_pelaksanaan).getDate()}</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <h4 className="font-bold text-gray-800 text-base mb-1 group-hover:text-primary transition">{item.judul}</h4>
-                                        <p className="text-xs text-gray-500 mb-1"><Clock className="w-3 h-3 inline mr-1"/> {new Date(item.waktu_pelaksanaan).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit'})} WIB</p>
-                                        <p className="text-sm text-gray-600 line-clamp-1">{item.deskripsi}</p>
-                                    </div>
-                                </div>
-                            )) : (
-                                <p className="text-gray-500 text-sm italic">Tidak ada agenda tambahan dalam waktu dekat.</p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* 5. TRANSPARANSI KAS MASJID (MEMVALIDASI DONASI) */}
-            <div id="transparansi" className="bg-gray-50 py-16 border-t border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-10">
-                        <h2 className="text-3xl font-bold text-gray-800 flex items-center justify-center gap-2">
-                            <Wallet className="text-primary" /> Transparansi Kas Masjid
-                        </h2>
-                        <p className="text-gray-500 mt-3">Sebagai bentuk pertanggungjawaban, data keuangan diperbarui secara real-time.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white border border-green-100 p-8 rounded-2xl text-center shadow-sm hover:shadow-md transition">
-                            <div className="w-14 h-14 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4"><TrendingUp className="w-7 h-7" /></div>
-                            <p className="text-gray-500 font-medium mb-1">Total Pemasukan</p>
-                            <h3 className="text-2xl font-bold text-green-600">{formatRupiah(data.keuangan.total_pemasukan)}</h3>
-                        </div>
-                        <div className="bg-primary shadow-lg shadow-green-200 p-8 rounded-2xl text-center transform md:-translate-y-2">
-                            <div className="w-14 h-14 bg-white/20 text-white rounded-full flex items-center justify-center mx-auto mb-4"><Wallet className="w-7 h-7" /></div>
-                            <p className="text-green-100 font-medium mb-1">Saldo Kas Saat Ini</p>
-                            <h3 className="text-3xl md:text-4xl font-extrabold text-white">{formatRupiah(data.keuangan.saldo_akhir)}</h3>
-                            <p className="text-xs text-green-200 mt-2">Dana siap digunakan untuk keperluan umat</p>
-                        </div>
-                        <div className="bg-white border border-red-100 p-8 rounded-2xl text-center shadow-sm hover:shadow-md transition">
-                            <div className="w-14 h-14 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><TrendingDown className="w-7 h-7" /></div>
-                            <p className="text-gray-500 font-medium mb-1">Total Pengeluaran</p>
-                            <h3 className="text-2xl font-bold text-red-600">{formatRupiah(data.keuangan.total_pengeluaran)}</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* 4. PROGRAM WAKAF & DONASI (DIPINDAH KE ATAS AGAR JADI PRIORITAS) */}
-            <div id="donasi" className="bg-white py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        {/* <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-full text-sm font-bold mb-4">
-                            <Heart className="w-4 h-4 fill-current" /> Salurkan Kebaikan
-                        </div> */}
-                        <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Target Pengadaan & Wakaf</h2>
-                        <p className="text-gray-500 max-w-2xl mx-auto">Mari bersama-msama mewujudkan fasilitas ibadah yang nyaman bagi seluruh jamaah Masjid An-Nur Puloniti.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {data.campaigns.length === 0 ? (
-                            <div className="col-span-full text-center text-gray-500 py-10 bg-gray-50 rounded-xl border border-gray-100">Belum ada program donasi aktif saat ini.</div>
-                        ) : (
-                            data.campaigns.map(cam => {
-                                const persen = Math.min((cam.terkumpul_nominal / cam.target_nominal) * 100, 100).toFixed(1);
-                                return (
-                                    <div key={cam.id} className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 overflow-hidden group">
-                                        <div className="p-6">
-                                            <h3 className="text-xl font-bold text-gray-800 mb-2 line-clamp-2">{cam.judul}</h3>
-                                            <p className="text-gray-500 text-sm mb-6 line-clamp-3 leading-relaxed">{cam.deskripsi}</p>
-                                            <div className="mb-2 flex justify-between text-sm font-bold"><span className="text-primary">{formatRupiah(cam.terkumpul_nominal)}</span><span className="text-gray-400">/ {formatRupiah(cam.target_nominal)}</span></div>
-                                            <div className="w-full bg-gray-100 rounded-full h-2.5 mb-2 overflow-hidden"><div className="bg-primary h-2.5 rounded-full" style={{ width: `${persen}%` }}></div></div>
-                                            <p className="text-xs text-gray-500 text-right mb-6">{persen}% Terkumpul</p>
-                                            <div className="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300 text-center">
-                                                <p className="text-xs text-gray-500 mb-1">Transfer Rekening BSI</p>
-                                                <p className="font-bold text-gray-800 tracking-wider text-lg">7123 4567 890</p>
-                                                <p className="text-xs text-gray-500 mt-1">a.n Masjid An-Nur Puloniti</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-            </div>
-
-{/* 6. TENTANG KAMI */}
-<div id="tentang" className="bg-white py-20 mt-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                        <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-bold mb-4">
-                                <Info className="w-4 h-4" /> Profil Masjid
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">Mengenal Masjid An-Nur Puloniti</h2>
-                            
-                            {/* PERBAIKAN: Gunakan <div> alih-alih <p> jika ingin memasukkan <h3> dan <ul> di dalamnya */}
-                            <div className="text-gray-600 leading-relaxed mb-8">
-                                <h3 className="text-xl font-bold mb-3 text-gray-800">Visi & Misi</h3>
-                                <ul className="space-y-2 text-gray-700 list-disc list-inside mb-4">
-                                    <li>Mewujudkan masjid sebagai pusat peribadatan yang khusyuk.</li>
-                                    <li>Membangun generasi Qur'ani melalui pendidikan yang berkelanjutan.</li>
-                                    <li>Mengelola dana umat secara transparan, profesional, dan amanah.</li>
-                                </ul>
-                                Masjid An-Nur Puloniti berkomitmen menyajikan fasilitas ibadah yang nyaman, majelis ilmu yang mencerdaskan, serta sistem tata kelola keuangan yang 100% transparan dengan dukungan teknologi modern.
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <div className="aspect-video bg-gray-200 rounded-2xl overflow-hidden shadow-lg relative">
-                                <img src="https://images.unsplash.com/photo-1564683214965-3619addd900d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Masjid An-Nur Puloniti" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-xl border border-gray-100 hidden md:block">
-                                <p className="text-3xl font-bold text-primary mb-1">100%</p>
-                                <p className="text-sm font-medium text-gray-500">Transparan & Amanah</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* 7. PROGRAM & KEGIATAN RUTIN */}
-            <div id="program" className="bg-white py-20 border-t border-gray-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-800">Program & Kegiatan Unggulan</h2>
-                        <p className="text-gray-500 mt-3 max-w-2xl mx-auto">Kami senantiasa menghidupkan masjid dengan berbagai kegiatan positif untuk semua kalangan usia.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-lg transition">
-                            <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center mb-6"><BookOpen className="w-7 h-7" /></div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-3">Pendidikan Islam</h3>
-                            <p className="text-gray-600 leading-relaxed mb-4">Membangun generasi Qur'ani sejak dini melalui program baca tulis Al-Quran dan perbaikan tajwid.</p>
-                            <ul className="text-sm text-gray-500 space-y-2">
-                                <li className="flex items-center"><Sparkles className="w-4 h-4 mr-2 text-indigo-400" /> TPQ Anak-anak</li>
-                                <li className="flex items-center"><Sparkles className="w-4 h-4 mr-2 text-indigo-400" /> Tahsin (Perbaikan Bacaan)</li>
-                                <li className="flex items-center font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded w-fit mt-2">Setiap Rabu, Pukul 15:30 WIB</li>
-                            </ul>
-                        </div>
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-lg transition">
-                            <div className="w-14 h-14 bg-teal-100 text-teal-600 rounded-xl flex items-center justify-center mb-6"><Users className="w-7 h-7" /></div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-3">Majelis Ilmu & Dzikir</h3>
-                            <p className="text-gray-600 leading-relaxed mb-4">Wadah silaturahmi jamaah untuk menuntut ilmu agama dan memperkuat keimanan bersama.</p>
-                            <ul className="text-sm text-gray-500 space-y-2">
-                                <li className="flex items-center"><Sparkles className="w-4 h-4 mr-2 text-teal-400" /> Kajian Rutin (Setiap Selasa)</li>
-                                <li className="flex items-center"><Sparkles className="w-4 h-4 mr-2 text-teal-400" /> Yasinan (Setiap Kamis Malam)</li>
-                                <li className="flex items-center"><Sparkles className="w-4 h-4 mr-2 text-teal-400" /> Istighosah (Rutin Bulanan)</li>
-                            </ul>
-                        </div>
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-lg transition relative overflow-hidden">
-                            <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center mb-6"><Moon className="w-7 h-7" /></div>
-                            <h3 className="text-xl font-bold text-gray-800 mb-3">Ramadhan & Hari Besar</h3>
-                            <p className="text-gray-600 leading-relaxed mb-4">Pengelolaan momen hari besar Islam secara terorganisir, transparan, dan penuh keberkahan.</p>
-                            <ul className="text-sm text-gray-500 space-y-2">
-                                <li className="flex items-start">
-                                    <Sparkles className="w-4 h-4 mr-2 mt-0.5 text-orange-400 flex-shrink-0" /> 
-                                    <div>I'tikaf Sepuluh Malam Terakhir<span className="block mt-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded animate-pulse w-fit">Disediakan Makan Sahur Gratis!</span></div>
-                                </li>
-                                <li className="flex items-center mt-3"><Sparkles className="w-4 h-4 mr-2 text-orange-400" /> Manajemen Penyaluran Qurban</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-{/* 8. GALERI & DOKUMENTASI (BENTO GRID STYLE) */}
-<div id="galeri" className="bg-gray-50 py-20 border-t border-gray-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-4">
-                        <div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-bold mb-4">
-                                <Camera className="w-4 h-4" /> Galeri Masjid
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Dokumentasi Kegiatan</h2>
-                            <p className="text-gray-500 mt-3 max-w-2xl">Potret kebersamaan dan aktivitas ibadah jamaah di Masjid An-Nur Puloniti.</p>
-                        </div>
-                    </div>
-                    
-                    {/* BENTO GRID LAYOUT */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[150px] md:auto-rows-[200px]">
-                        
-                        {/* Foto 1 (Besar Kiri) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-2 row-span-2 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Kajian Akbar" className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-5 transform translate-y-2 group-hover:translate-y-0 transition duration-300">
-                                <span className="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded mb-2 inline-block">MAJELIS ILMU</span>
-                                <h3 className="text-white font-bold text-lg md:text-xl leading-tight">Kajian Akbar Ramadhan Bersama Jamaah</h3>
-                            </div>
-                        </div>
-
-                        {/* Foto 2 (Kecil Kanan Atas 1) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-1 row-span-1 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1604868187858-8686d1494eb7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Al-Quran" className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-4">
-                                <h3 className="text-white font-bold text-sm">Tahsin Al-Quran</h3>
-                            </div>
-                        </div>
-
-                        {/* Foto 3 (Kecil Kanan Atas 2) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-1 row-span-1 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1584553421528-7690327f29f0?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Sholat Berjamaah" className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-4">
-                                <h3 className="text-white font-bold text-sm">Shalat Berjamaah</h3>
-                            </div>
-                        </div>
-
-                        {/* Foto 4 (Lebar Kanan Bawah) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-2 row-span-1 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1590076214871-3312a0237da0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="TPQ Anak" className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-70 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-4">
-                                <span className="bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded mb-1.5 inline-block">PENDIDIKAN</span>
-                                <h3 className="text-white font-bold text-sm md:text-base">Kegiatan Belajar TPQ Anak-Anak</h3>
-                            </div>
-                        </div>
-
-                        {/* Foto 5 (Lebar Kiri Bawah) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-2 row-span-1 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1593113589914-075568e0723f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Zakat" className="w-full h-full object-cover group-hover:scale-110 transition duration-700 object-top" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-70 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-4">
-                                <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded mb-1.5 inline-block">SOSIAL</span>
-                                <h3 className="text-white font-bold text-sm md:text-base">Penyaluran Zakat & Sembako Warga</h3>
-                            </div>
-                        </div>
-
-                        {/* Foto 6 (Kecil Kanan Bawah 1) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-1 row-span-1 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1519817650390-64a93db51149?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Gotong Royong" className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-4">
-                                <h3 className="text-white font-bold text-sm">Kerja Bakti</h3>
-                            </div>
-                        </div>
-
-                        {/* Foto 7 (Kecil Kanan Bawah 2) */}
-                        <div className="relative group overflow-hidden rounded-2xl col-span-1 row-span-1 shadow-sm">
-                            <img src="https://images.unsplash.com/photo-1610465223321-7294fb8e9ee2?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Ramadhan" className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-70 group-hover:opacity-100 transition duration-300"></div>
-                            <div className="absolute bottom-0 left-0 p-4">
-                                <h3 className="text-white font-bold text-sm">I'tikaf</h3>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            {/* 9. BERITA TERKINI (KLIK MENUJU DETAIL) */}
-            <div className="bg-gray-50 py-20 border-t border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    
-                    {/* Header Berita dengan Tombol Lihat Semua */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
-                        <div>
-                            <h2 className="text-3xl font-bold text-gray-800">Berita Terkini</h2>
-                            <p className="text-gray-500 mt-2">Update informasi dan laporan kegiatan dari Jurnalis Masjid.</p>
-                        </div>
-                        <Link to="/berita-lengkap" className="text-primary font-bold hover:underline flex items-center bg-blue-50/80 border border-blue-100 px-5 py-2.5 rounded-xl transition hover:bg-blue-100 shadow-sm">
-                            Lihat Semua Berita <ArrowRight className="w-4 h-4 ml-2" />
-                        </Link>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {data.berita.length === 0 ? (
-                            <div className="col-span-full text-center text-gray-500 bg-white p-8 rounded-xl border border-gray-100">Belum ada berita dipublikasikan.</div>
-                        ) : (
-                            data.berita.map(b => (
-                                <Link to={`/berita/${b.id}`} key={b.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition group flex flex-col">
-                                    <div className="h-48 bg-gray-200 overflow-hidden relative">
-                                        {b.thumbnail ? (
-                                            <img src={`http://localhost:8000/storage/${b.thumbnail}`} alt={b.judul} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-100"><Calendar className="w-10 h-10 text-gray-300" /></div>
-                                        )}
-                                    </div>
-                                    <div className="p-6 flex-1 flex flex-col">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <p className="text-xs text-primary font-bold">{formatTanggal(b.created_at)}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold flex items-center bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100"><Eye className="w-3 h-3 mr-1"/> {b.views || 0} kali dibaca</p>
-                                        </div>
-                                        <h3 className="text-lg font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-primary transition">{b.judul}</h3>
-                                        <p className="text-gray-500 text-sm line-clamp-3 mb-4">{b.konten}</p>
-                                        <div className="mt-auto pt-4 border-t border-gray-50 text-xs text-gray-400 flex justify-between items-center">
-                                            <span>Oleh: {b.penulis?.name || 'Admin'}</span>
-                                            <span className="text-primary font-bold">Baca <ArrowRight className="w-3 h-3 inline"/></span>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* 10. FOOTER */}
-            <footer className="bg-gray-900 text-gray-300 py-12">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div>
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-bold">A</div>
-                            <span className="font-bold text-xl text-white">SIMAS An-Nur</span>
-                        </div>
-                        <p className="text-sm text-gray-400 leading-relaxed">Sistem Informasi Manajemen Masjid. Membangun umat melalui transparansi digital, pendidikan, dan manajemen yang terintegrasi.</p>
-                    </div>
-                    <div>
-                        <h4 className="text-white font-bold mb-4">Hubungi Kami</h4>
-                        <ul className="space-y-3 text-sm">
-                            <li className="flex items-start gap-3"><MapPin className="w-5 h-5 text-primary flex-shrink-0" /> Desa Puloniti, Kecamatan Bangsal, Kabupaten Mojokerto, Jawa Timur</li>
-                            <li className="flex items-center gap-3"><Phone className="w-5 h-5 text-primary flex-shrink-0" /> +62 812 3456 7890 (Takmir)</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="text-white font-bold mb-4">Akses Cepat</h4>
-                        <ul className="space-y-2 text-sm">
-                            <li><a href="#donasi" className="hover:text-primary transition">Salurkan Wakaf / Donasi</a></li>
-                            <li><a href="#program" className="hover:text-primary transition">Jadwal Kegiatan</a></li>
-                            <li><Link to="/login" className="hover:text-primary transition">Masuk Dasbor Pengurus (Login)</Link></li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="border-t border-gray-800 mt-10 pt-8 text-center text-sm text-gray-500">
-                    &copy; {new Date().getFullYear()} Masjid An-Nur Puloniti. Dirancang menggunakan React & Laravel.
-                </div>
-            </footer>
+            <Suspense fallback={null}>
+                <Footer />
+            </Suspense>
         </div>
     );
 }
