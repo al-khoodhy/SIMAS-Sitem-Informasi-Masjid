@@ -8,11 +8,30 @@ use Carbon\Carbon; // Pastikan ini di-import untuk manipulasi waktu
 
 class AgendaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Menampilkan SEMUA agenda, diurutkan dari yang terbaru/terdekat
-        $agendas = Agenda::orderBy('waktu_pelaksanaan', 'desc')->get();
-        return response()->json(['success' => true, 'data' => $agendas]);
+        $query = \App\Models\Agenda::query();
+
+        // FITUR SERVER-SIDE SEARCH (Berdasarkan Judul atau Lokasi)
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('judul', 'like', '%' . $request->search . '%')
+                  ->orWhere('lokasi', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // SERVER-SIDE PAGINATION (Ambil 10 data per halaman, urut dari yang terdekat/terbaru)
+        $agendas = $query->orderBy('waktu_pelaksanaan', 'desc')->paginate(10);
+
+        return response()->json([
+            'success' => true, 
+            'data' => $agendas->items(),
+            'pagination' => [
+                'current_page' => $agendas->currentPage(),
+                'last_page' => $agendas->lastPage(),
+                'total' => $agendas->total()
+            ]
+        ]);
     }
 
     public function store(Request $request)

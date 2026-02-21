@@ -11,16 +11,43 @@ class MustahikController extends Controller
     /**
      * Menampilkan semua daftar Mustahik
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Mengambil semua data mustahik, diurutkan dari yang paling baru ditambahkan
-        $mustahik = Mustahik::orderBy('created_at', 'desc')->get();
+        $query = \App\Models\Mustahik::query();
+
+        if ($request->filled('search')) {
+            $query->where('nama_lengkap', 'like', "%{$request->search}%")
+                  ->orWhere('rt', 'like', "%{$request->search}%");
+        }
+
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'nama_asc': $query->orderBy('nama_lengkap', 'asc'); break;
+                case 'nama_desc': $query->orderBy('nama_lengkap', 'desc'); break;
+                case 'rt_asc': $query->orderBy('rt', 'asc'); break;
+                case 'rt_desc': $query->orderBy('rt', 'desc'); break;
+                default: $query->latest();
+            }
+        } else {
+            $query->latest();
+        }
+
+        // Khusus untuk fitur "Pilih Semua" saat membagikan zakat, kita buat opsi untuk GET ALL tanpa pagination
+        if ($request->has('get_all')) {
+            return response()->json(['success' => true, 'data' => $query->get()]);
+        }
+
+        $mustahik = $query->paginate(20);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Data Mustahik berhasil diambil',
-            'data' => $mustahik
-        ], 200);
+            'success' => true, 
+            'data' => $mustahik->items(),
+            'pagination' => [
+                'current_page' => $mustahik->currentPage(),
+                'last_page' => $mustahik->lastPage(),
+                'total' => $mustahik->total()
+            ]
+        ]);
     }
 
     /**

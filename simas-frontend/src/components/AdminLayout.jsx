@@ -1,7 +1,8 @@
 // src/components/AdminLayout.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Wallet, Users, Newspaper, Package, LogOut, Menu, HandHeart } from 'lucide-react';
+// OPTIMASI: Tambahkan BookOpen di sini
+import { LayoutDashboard, Wallet, Users, Newspaper, Package, LogOut, Menu, HandHeart, BookOpen } from 'lucide-react';
 import api from '../api/axios';
 import { Settings, UserCog } from 'lucide-react';
 
@@ -16,7 +17,7 @@ export default function AdminLayout() {
         const token = localStorage.getItem('token');
         
         if (!userData || !token) {
-            navigate('/'); // Usir ke halaman login jika belum login
+            navigate('/');
         } else {
             setUser(JSON.parse(userData));
         }
@@ -41,7 +42,7 @@ export default function AdminLayout() {
         { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['developer', 'panitia', 'remaja'] },
         { title: 'Manajemen Pengguna', icon: UserCog, path: '/pengguna', roles: ['developer'] },
         { title: 'Keuangan', icon: Wallet, path: '/keuangan', roles: ['developer', 'panitia'] },
-        
+        { title: 'Verifikasi Donasi', icon: Wallet, path: '/verifikasi-donasi', roles: ['developer', 'panitia'] },
         { title: 'Agenda', icon: Newspaper, path: '/agenda', roles: ['developer', 'panitia'] },
         { 
             title: user.role === 'remaja' ? 'Tugas Penyaluran' : 'Manajemen Zakat', 
@@ -49,9 +50,12 @@ export default function AdminLayout() {
             path: '/zakat', 
             roles: ['developer', 'panitia', 'remaja'] 
         },
-        
         { title: 'Manajemen Berita', icon: Newspaper, path: '/berita', roles: ['developer', 'panitia', 'remaja'] },
         { title: 'Inventaris', icon: Package, path: '/inventaris', roles: ['developer', 'panitia', 'remaja'] },
+        
+        // OPTIMASI: Tambahkan menu E-Library / Buku untuk panitia dan developer
+        { title: 'E-Library / Buku', icon: BookOpen, path: '/manajemen-buku', roles: ['developer', 'panitia'] },
+        
         { title: 'Pengaturan Kas', icon: Settings, path: '/pengaturan-keuangan', roles: ['developer', 'panitia'] },
     ];
 

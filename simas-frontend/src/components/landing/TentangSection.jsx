@@ -2,7 +2,7 @@ import { Info } from 'lucide-react';
 
 export default function TentangSection() {
     return (
-        <section id="tentang" className="bg-white py-20 mt-10">
+        <section id="tentang" className="bg-grey-50 py-20 mt-10">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div>

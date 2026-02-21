@@ -1,59 +1,264 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🕌 SIMAS (Sistem Informasi Manajemen Masjid) - Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Repositori ini berisi kode sumber backend (API) untuk **SIMAS An-Nur Puloniti**, sebuah aplikasi web berbasis Laravel 11 untuk manajemen masjid, meliputi pencatatan kas, penyaluran zakat, program *crowdfunding* (donasi), hingga publikasi kegiatan (agenda & berita).
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🚀 Persyaratan Sistem
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Sebelum menjalankan aplikasi ini, pastikan sistem Anda telah memenuhi persyaratan berikut:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **PHP** >= 8.2  
+- **Composer** (Package Manager untuk PHP)  
+- **MySQL** atau **MariaDB**  
+- Ekstensi PHP:
+  - OpenSSL
+  - PDO
+  - Mbstring
+  - Tokenizer
+  - XML
+  - Ctype
+  - JSON
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 🛠️ Panduan Instalasi (Lokal)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Ikuti langkah-langkah berikut untuk menjalankan backend SIMAS di komputer lokal Anda.
 
-## Laravel Sponsors
+### 1. Kloning Repositori
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone <url-repositori-anda>
+cd simas-backend
+```
 
-### Premium Partners
+### 2. Install Dependensi PHP
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+composer install
+```
 
-## Contributing
+### 3. Konfigurasi Environment
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Salin file `.env.example` menjadi `.env`:
 
-## Code of Conduct
+```bash
+cp .env.example .env
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Kemudian buka file `.env` dan sesuaikan konfigurasi database:
 
-## Security Vulnerabilities
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=simas_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+> Pastikan database `simas_db` sudah dibuat terlebih dahulu di MySQL.
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 4. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+---
+
+### 5. Jalankan Migrasi dan Seeder
+
+Perintah berikut akan membuat seluruh tabel database sekaligus mengisi data awal:
+
+```bash
+php artisan migrate --seed
+```
+
+---
+
+### 6. Buat Storage Link
+
+Digunakan agar file upload (gambar donasi, berita, kegiatan) dapat diakses publik.
+
+```bash
+php artisan storage:link
+```
+
+---
+
+### 7. Jalankan Server Lokal
+
+```bash
+php artisan serve
+```
+
+Backend API akan berjalan di:
+
+```
+http://127.0.0.1:8000
+```
+
+---
+
+## 🗄️ Struktur Database Utama
+
+Berikut tabel utama dalam sistem:
+
+- **users**  
+  Menyimpan akun pengurus masjid (Role: `developer`, `panitia`, `remaja`)
+
+- **transaksi_keuangans**  
+  Mencatat arus kas (pemasukan dan pengeluaran)
+
+- **agendas**  
+  Jadwal kegiatan masjid (kajian, rapat, dll)
+
+- **beritas**  
+  Artikel atau berita dengan relasi ke `users` sebagai penulis dan sistem approval
+
+- **mustahiks**  
+  Data warga penerima zakat
+
+- **penyaluran_zakats**  
+  Riwayat distribusi zakat beserta dokumentasi
+
+- **campaign_donasis**  
+  Program penggalangan dana atau wakaf
+
+- **donasis**  
+  Donasi jamaah yang masuk melalui landing page dan menunggu verifikasi
+
+---
+
+## 📡 Dokumentasi API
+
+Backend berjalan sebagai RESTful API dengan format respons JSON.
+
+---
+
+## 🌐 Public Routes (Tanpa Token)
+
+Digunakan oleh pengunjung umum (Landing Page).
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| GET | /api/public/landing | Data ringkasan beranda |
+| GET | /api/public/berita-semua | Semua berita yang dipublikasi |
+| GET | /api/public/berita/{id} | Detail berita + tambah view count |
+| GET | /api/public/agenda | Jadwal kegiatan (filter `month`, `year`) |
+| POST | /api/public/donasi | Kirim bukti transfer donasi |
+| POST | /api/login | Login pengurus (menghasilkan Bearer Token) |
+
+---
+
+## 🔐 Protected Routes (Memerlukan Bearer Token)
+
+Tambahkan header berikut pada setiap request:
+
+```
+Authorization: Bearer <token_anda>
+```
+
+---
+
+### 👥 Rute Umum (Semua Role Login)
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| POST | /api/logout | Logout & revoke token |
+| GET | /api/me | Data profil user aktif |
+| PUT | /api/profile | Update nama/password |
+| GET | /api/dashboard-stats | Statistik dashboard |
+
+---
+
+### 🧑‍🎓 Modul Berita & Inventaris  
+(Akses: Remaja, Panitia, Developer)
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| GET | /api/berita | List berita |
+| POST | /api/berita | Buat draft berita |
+| PUT | /api/berita/{id} | Update berita |
+| DELETE | /api/berita/{id} | Hapus berita |
+| GET | /api/inventaris | Data inventaris |
+| POST | /api/penyaluran-zakat/{id}/konfirmasi | Upload bukti distribusi zakat |
+
+---
+
+### 👳‍♂️ Modul Manajemen Inti  
+(Akses: Panitia & Developer)
+
+#### 💰 Keuangan & Donasi
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| GET | /api/keuangan | Buku kas (pagination, search, tipe) |
+| POST | /api/keuangan | Tambah transaksi |
+| GET | /api/donasi | List donasi masuk |
+| POST | /api/donasi/{id}/approve | Approve & otomatis masuk buku kas |
+| POST | /api/donasi/{id}/reject | Tolak donasi |
+
+#### 🕌 Zakat & Mustahik
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| GET | /api/mustahik | List penerima zakat |
+| POST | /api/mustahik/mass-destroy | Hapus banyak data |
+| POST | /api/penyaluran-zakat/mass-update | Update massal |
+| GET | /api/zakat/export-pdf | Export laporan PDF |
+
+#### 🗓️ Agenda & Approval Berita
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| POST | /api/agenda/mass-destroy | Hapus agenda massal |
+| POST | /api/berita/{id}/approve | Approve berita |
+| POST | /api/berita/{id}/reject | Reject berita |
+
+---
+
+### 👑 Modul Super Admin (Developer)
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|------------|
+| GET | /api/users | CRUD akun pengurus |
+
+---
+
+## 🛡️ Keamanan & Hak Akses
+
+Sistem menggunakan **Laravel Sanctum** untuk otentikasi berbasis token dan menerapkan Role-Based Access Control (RBAC) melalui middleware.
+
+### 1️⃣ Developer (Super Admin)
+- Akses penuh sistem
+- CRUD akun pengurus
+- Penghapusan data massal
+
+### 2️⃣ Panitia (Manajer)
+- Kelola keuangan & zakat
+- Validasi donasi
+- Approval berita
+- Kelola mustahik
+
+### 3️⃣ Remaja (Relawan)
+- Menulis & edit draft berita
+- Upload bukti distribusi zakat
+- Akses terbatas tanpa hak manajemen inti
+
+---
+
+## 📌 Catatan Tambahan
+
+- Backend ini dirancang sebagai API murni (tanpa blade template).
+- Direkomendasikan menggunakan Postman atau Insomnia untuk pengujian endpoint.
+- Gunakan HTTPS di lingkungan produksi.
+- Selalu backup database secara berkala.
+
+---
+
+**SIMAS — Transparansi, Akuntabilitas, dan Profesionalitas Manajemen Masjid.**

@@ -46,6 +46,7 @@ class KeuanganController extends Controller
             $periode = "Periode: Semua Waktu";
         }
 
+        $path = public_path('logo-masjid.png');
         $transaksi = $query->get();
         $totalPemasukan = $transaksi->where('tipe', 'masuk')->sum('nominal');
         $totalPengeluaran = $transaksi->where('tipe', 'keluar')->sum('nominal');
@@ -54,6 +55,7 @@ class KeuanganController extends Controller
         // Siapkan data untuk dikirim ke template PDF
         $data = [
             'transaksi' => $transaksi,
+            'logo' => $path,
             'periode' => $periode,
             'totalPemasukan' => $totalPemasukan,
             'totalPengeluaran' => $totalPengeluaran,

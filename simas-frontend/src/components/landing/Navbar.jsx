@@ -16,6 +16,9 @@ export default function Navbar() {
                         <a href="#tentang" className="hover:text-primary transition">Tentang</a>
                         <a href="#program" className="hover:text-primary transition">Program</a>
                         <a href="#galeri" className="hover:text-primary transition">Galeri</a>
+                        <Link to="/perpustakaan" className="hover:text-primary transition text-primary font-bold">
+                            📚 Perpustakaan
+                        </Link>
                     </div>
                     <div>
                         <Link to="/login" className="text-primary font-semibold hover:bg-green-50 px-5 py-2.5 rounded-full transition flex items-center border border-primary text-sm">

@@ -8,7 +8,19 @@ class Berita extends Model
 {
     protected $table = 'berita';
     
-    protected $fillable = ['judul', 'konten', 'thumbnail', 'link_youtube', 'penulis_id', 'status', 'views'];
+    // TAMBAHKAN 'slug', 'disetujui_oleh', dan 'published_at' DI SINI
+    protected $fillable = [
+        'judul', 
+        'slug',           // <--- Wajib ditambahkan
+        'konten', 
+        'thumbnail', 
+        'link_youtube', 
+        'penulis_id', 
+        'status', 
+        'views',
+        'disetujui_oleh', // <--- Wajib untuk fitur Approve/Reject Panitia
+        'published_at'    // <--- Wajib untuk mencatat kapan tayang
+    ];
 
     // Relasi ke User yang menulis (Remaja)
     public function penulis()

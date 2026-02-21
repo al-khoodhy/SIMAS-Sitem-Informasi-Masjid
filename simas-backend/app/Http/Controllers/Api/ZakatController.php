@@ -12,11 +12,61 @@ use Illuminate\Support\Facades\Auth;
 
 class ZakatController extends Controller
 {
-    // 1. MENGAMBIL DAFTAR PENYALURAN
-    public function indexPenyaluran()
+    public function indexPenyaluran(Request $request)
     {
-        $penyaluran = PenyaluranZakat::with('mustahik')->orderBy('created_at', 'desc')->get();
-        return response()->json(['success' => true, 'data' => $penyaluran]);
+        // Panggil model beserta relasi mustahiknya
+        $query = \App\Models\PenyaluranZakat::with('mustahik');
+
+        // 1. Pencarian berdasarkan Nama Mustahik atau RT
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('mustahik', function($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('rt', 'like', "%{$search}%");
+            });
+        }
+
+        // 2. Pengurutan (Sorting) MENGGUNAKAN CLOSURE AGAR AMAN
+        // Kita menggunakan addSelect untuk menyambungkan tabel secara halus
+        if ($request->filled('sort')) {
+            $tableName = (new \App\Models\PenyaluranZakat)->getTable();
+            $mustahikTable = (new \App\Models\Mustahik)->getTable();
+
+            $query->join($mustahikTable, "{$tableName}.mustahik_id", '=', "{$mustahikTable}.id")
+                  ->select("{$tableName}.*"); // Hanya ambil data dari tabel penyaluran untuk mencegah ID bertabrakan
+
+            switch ($request->sort) {
+                case 'nama_asc':
+                    $query->orderBy("{$mustahikTable}.nama_lengkap", 'asc');
+                    break;
+                case 'nama_desc':
+                    $query->orderBy("{$mustahikTable}.nama_lengkap", 'desc');
+                    break;
+                case 'rt_asc':
+                    $query->orderBy("{$mustahikTable}.rt", 'asc');
+                    break;
+                case 'rt_desc':
+                    $query->orderBy("{$mustahikTable}.rt", 'desc');
+                    break;
+                default:
+                    $query->latest("{$tableName}.created_at");
+            }
+        } else {
+            $query->latest(); // Default: yang terbaru di atas
+        }
+
+        // 3. Pagination (Hanya ambil 20 per halaman)
+        $penyaluran = $query->paginate(20);
+
+        return response()->json([
+            'success' => true, 
+            'data' => $penyaluran->items(),
+            'pagination' => [
+                'current_page' => $penyaluran->currentPage(),
+                'last_page' => $penyaluran->lastPage(),
+                'total' => $penyaluran->total()
+            ]
+        ]);
     }
 
     // 2. PANITIA MEMBUAT RENCANA PENYALURAN (Status: Menunggu)
@@ -89,7 +139,9 @@ class ZakatController extends Controller
     public function exportPdf(Request $request)
     {
         $tahun = $request->tahun ?? date('Y');
-        
+
+        $path = public_path('logo-masjid.png');
+
         $penyaluran = PenyaluranZakat::with('mustahik')
             ->whereYear('tanggal_penyaluran', $tahun)
             ->where('status', 'disalurkan')
@@ -97,6 +149,7 @@ class ZakatController extends Controller
 
         $data = [
             'tahun' => $tahun,
+            'logo' => $path,
             'penyaluran' => $penyaluran,
             'pencetak' => Auth::user()->name,
             'tanggal_cetak' => now()->format('d M Y H:i')

@@ -29,7 +29,7 @@ export default function Footer() {
                 </div>
             </div>
             <div className="border-t border-gray-800 mt-10 pt-8 text-center text-sm text-gray-500">
-                &copy; {new Date().getFullYear()} Masjid An-Nur Puloniti. Dirancang menggunakan React & Laravel.
+                &copy; {new Date().getFullYear()} Masjid An-Nur Puloniti. by Abdurrahman Al Khoodhy'.
             </div>
         </footer>
     );

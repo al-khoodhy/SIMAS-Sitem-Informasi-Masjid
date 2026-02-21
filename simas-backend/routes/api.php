@@ -3,27 +3,33 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController; // TAMBAHAN IMPORT
 use App\Http\Controllers\Api\KeuanganController;
 use App\Http\Controllers\Api\BeritaController;
 use App\Http\Controllers\Api\MustahikController;
 use App\Http\Controllers\Api\InventarisController;
 use App\Http\Controllers\Api\ZakatController;
-// Nanti tambahkan Controller lain di sini (KeuanganController, BeritaController, dll)
+use App\Http\Controllers\Api\DonasiController;
+use App\Http\Controllers\Api\LandingController;
+use App\Http\Controllers\Api\AgendaController;
+use App\Http\Controllers\Api\KategoriKeuanganController;
+use App\Http\Controllers\Api\CampaignDonasiController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\TransaksiKeuanganController;
 
 /*
 |--------------------------------------------------------------------------
 | Rute Publik (Tanpa perlu login)
 |--------------------------------------------------------------------------
 */
-Route::get('/public/landing', [\App\Http\Controllers\Api\LandingController::class, 'index']);
-Route::get('/public/berita/{id}', [\App\Http\Controllers\Api\LandingController::class, 'newsDetail']);
-Route::get('/public/agenda', [\App\Http\Controllers\Api\LandingController::class, 'allAgenda']);
+Route::get('/public/buku', [\App\Http\Controllers\Api\BukuController::class, 'indexPublic']);
+Route::get('/public/buku/filters', [\App\Http\Controllers\Api\BukuController::class, 'getFilters']);
+Route::get('/public/landing', [LandingController::class, 'index']);
+Route::get('/public/berita/{id}', [LandingController::class, 'newsDetail']);
+Route::get('/public/berita-semua', [LandingController::class, 'allBerita']);
+Route::get('/public/agenda', [LandingController::class, 'allAgenda']);
+Route::post('/public/donasi', [DonasiController::class, 'submitPublic']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/public/berita-semua', [\App\Http\Controllers\Api\LandingController::class, 'allBerita']);
-Route::get('/berita-publik', function() {
-    // Contoh rute untuk Landing Page mengambil data berita
-    return App\Models\Berita::where('status', 'dipublikasi')->get();
-});
 
 
 /*
@@ -33,86 +39,88 @@ Route::get('/berita-publik', function() {
 */
 Route::middleware('auth:sanctum')->group(function () {
     
-    // Rute Umum untuk semua yang sudah login
+    // 1. Rute Umum (Bisa diakses SIAPA SAJA yang sudah login)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-
-    // 👑 KHUSUS DEVELOPER
-    Route::middleware('role:developer')->group(function () {
-        Route::apiResource('/users', \App\Http\Controllers\Api\UserController::class);
-        // Keuangan
-    Route::put('/keuangan/{id}', [\App\Http\Controllers\Api\KeuanganController::class, 'update']);
-    Route::delete('/keuangan/{id}', [\App\Http\Controllers\Api\KeuanganController::class, 'destroy']);
-
-    // Berita
-    Route::put('/berita/{id}', [\App\Http\Controllers\Api\BeritaController::class, 'update']);
-    Route::delete('/berita/{id}', [\App\Http\Controllers\Api\BeritaController::class, 'destroy']);
-
-    // Penyaluran Zakat
-    Route::put('/penyaluran-zakat/{id}', [\App\Http\Controllers\Api\ZakatController::class, 'updatePenyaluran']);
-    Route::delete('/penyaluran-zakat/{id}', [\App\Http\Controllers\Api\ZakatController::class, 'destroyPenyaluran']);
-        // Contoh: Route::get('/system-logs', [SystemController::class, 'logs']);
-    });
-
-
-
-
-    // 👳‍♂️ KHUSUS PANITIA & DEVELOPER (Manajemen Keuangan & Zakat)
-    Route::middleware('role:panitia,developer')->group(function () {
-        Route::get('/dashboard-stats', [\App\Http\Controllers\Api\DashboardController::class, 'getStats']);
-
-        Route::apiResource('/agenda', \App\Http\Controllers\Api\AgendaController::class);
-        Route::post('/agenda/mass-destroy', [\App\Http\Controllers\Api\AgendaController::class, 'massDestroy']);
-        
-        // Rute Keuangan
-        Route::post('/keuangan/pemasukan', [KeuanganController::class, 'storePemasukan']);
-        Route::post('/keuangan/pengeluaran', [KeuanganController::class, 'storePengeluaran']);
-        // 1. Rute untuk Ringkasan Dasbor (Chart/Angka Besar)
-        Route::get('/summary', [KeuanganController::class, 'summary']);
-
-        // 2. Rute untuk Tabel dan Tambah Transaksi Keuangan
-        Route::get('/keuangan/export-pdf', [\App\Http\Controllers\Api\KeuanganController::class, 'exportPdf']);
-        Route::get('/keuangan', [KeuanganController::class, 'index']);
-        Route::post('/keuangan', [KeuanganController::class, 'store']);
-        
-        // Rute Approval Berita
-        Route::post('/berita/{id}/approve', [BeritaController::class, 'approve']);
-        
-        // Rute Mustahik
-        Route::apiResource('/mustahik', MustahikController::class);
-        Route::get('/mustahik', [MustahikController::class, 'index']);
-        Route::post('/mustahik', [MustahikController::class, 'store']);
-        Route::post('/mustahik/mass-destroy', [MustahikController::class, 'massDestroy']);
-
-        Route::apiResource('/kategori-keuangan', \App\Http\Controllers\Api\KategoriKeuanganController::class);
-        Route::apiResource('/campaign-donasi', \App\Http\Controllers\Api\CampaignDonasiController::class);
-       
-
-        Route::get('/zakat/summary', [\App\Http\Controllers\Api\ZakatController::class, 'summaryTahunan']);
-        Route::get('/zakat/export-pdf', [\App\Http\Controllers\Api\ZakatController::class, 'exportPdf']);
-
-        Route::post('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'storePenyaluran']);
-        Route::post('/penyaluran-zakat/mass-destroy', [\App\Http\Controllers\Api\ZakatController::class, 'massDestroyPenyaluran']);
-        Route::post('/penyaluran-zakat/mass-update', [\App\Http\Controllers\Api\ZakatController::class, 'massUpdatePenyaluran']);
-
-    });
-
-    // 🧑‍🎓 KHUSUS REMAJA, PANITIA, & DEVELOPER (Berita & Inventaris)
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::get('/dashboard-stats', [DashboardController::class, 'getStats']); // Dasbor untuk semua role
+    
+    // ------------------------------------------------------------------------
+    // 2. KHUSUS REMAJA, PANITIA, & DEVELOPER
+    // ------------------------------------------------------------------------
     Route::middleware('role:remaja,panitia,developer')->group(function () {
-
-        Route::put('/profile', [\App\Http\Controllers\Api\UserController::class, 'updateProfile']);
-        // Rute Berita (Remaja hanya bisa submit draft)
-        Route::post('/berita', [BeritaController::class, 'store']);
-        Route::put('/berita/{id}', [BeritaController::class, 'update']);
         
-        Route::get('/berita', [BeritaController::class, 'index']);
-        Route::post('/berita', [BeritaController::class, 'store']);
-        // Rute Inventaris
+        // Inventaris
         Route::apiResource('/inventaris', InventarisController::class);
+        
+        // Berita (Akses Dasar: Index, Store, Update, Destroy)
+        Route::apiResource('/berita', BeritaController::class);
 
+        // Penyaluran Zakat (Hanya melihat dan konfirmasi penerimaan)
+        Route::get('/penyaluran-zakat', [ZakatController::class, 'indexPenyaluran']);
+        Route::post('/penyaluran-zakat/{id}/konfirmasi', [ZakatController::class, 'konfirmasiPenyaluran']);
+    });
+
+
+    // ------------------------------------------------------------------------
+    // 3. KHUSUS PANITIA & DEVELOPER (Level Manajemen)
+    // ------------------------------------------------------------------------
+    Route::middleware('role:panitia,developer')->group(function () {
+        
+        // Berita (Approval Redaksi) -> Harus diletakkan di luar jangkauan Remaja
+        Route::post('/berita/{id}/approve', [BeritaController::class, 'approve']);
+        Route::post('/berita/{id}/reject', [BeritaController::class, 'reject']);
+
+        // Agenda (Custom rute harus di atas apiResource)
+        Route::post('/agenda/mass-destroy', [AgendaController::class, 'massDestroy']);
+        Route::apiResource('/agenda', AgendaController::class);
+        
+        // Transaksi Keuangan
+        Route::get('/summary', [KeuanganController::class, 'summary']);
+        Route::get('/keuangan/export-pdf', [KeuanganController::class, 'exportPdf']);
+        Route::apiResource('/keuangan', TransaksiKeuanganController::class); 
+        
+        // Mustahik
+        Route::post('/mustahik/mass-destroy', [MustahikController::class, 'massDestroy']);
+        Route::apiResource('/mustahik', MustahikController::class);
+
+        // Master Data Kategori & Campaign Donasi
+        Route::apiResource('/kategori-keuangan', KategoriKeuanganController::class);
+        Route::apiResource('/campaign-donasi', CampaignDonasiController::class);
+       
+        // Manajemen Zakat
+        Route::get('/zakat/summary', [ZakatController::class, 'summaryTahunan']);
+        Route::get('/zakat/export-pdf', [ZakatController::class, 'exportPdf']);
+        Route::post('/penyaluran-zakat/mass-destroy', [ZakatController::class, 'massDestroyPenyaluran']);
+        Route::post('/penyaluran-zakat/mass-update', [ZakatController::class, 'massUpdatePenyaluran']);
+        Route::post('/penyaluran-zakat', [ZakatController::class, 'storePenyaluran']);
+        Route::put('/penyaluran-zakat/{id}', [ZakatController::class, 'updatePenyaluran']);
+        Route::delete('/penyaluran-zakat/{id}', [ZakatController::class, 'destroyPenyaluran']);
         Route::get('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'indexPenyaluran']);
         Route::post('/penyaluran-zakat/{id}/konfirmasi', [\App\Http\Controllers\Api\ZakatController::class, 'konfirmasiPenyaluran']);
         
+        // Verifikasi Donasi / Crowdfunding
+        Route::get('/donasi', [DonasiController::class, 'index']);
+        Route::post('/donasi/{id}/approve', [DonasiController::class, 'approve']);
+        Route::post('/donasi/{id}/reject', [DonasiController::class, 'reject']);
+        Route::put('/donasi/{id}', [DonasiController::class, 'update']);
+
+        // Tambah Buku
+        Route::apiResource('/buku', \App\Http\Controllers\Api\BukuController::class);
+    });
+
+
+    // ------------------------------------------------------------------------
+    // 4. KHUSUS DEVELOPER (Super Admin)
+    // ------------------------------------------------------------------------
+    Route::middleware('role:developer')->group(function () {
+        
+        // Manajemen Akun Pengurus
+        Route::apiResource('/users', UserController::class);
+        
+        // Catatan: Tidak perlu mendeklarasikan ulang Hapus Keuangan/Berita di sini, 
+        // karena rute apiResource di grup 'panitia,developer' sudah mencakup Developer juga.
+        // Jika ingin hanya Developer yang bisa hapus, logic-nya diamankan dari Controller, bukan Route.
     });
 
 });
