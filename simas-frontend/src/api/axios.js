@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const api = axios.create({
     // baseURL: 'http://localhost:8000/api',
-    baseURL: 'http://192.168.1.6:8000/api', // Ganti dengan URL Laravel Anda jika sudah di-hosting
+    baseURL: 'http://47.236.145.121:8000/api', // Ganti dengan URL Laravel Anda jika sudah di-hosting
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
