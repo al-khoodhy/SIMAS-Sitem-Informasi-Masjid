@@ -44,7 +44,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::get('/dashboard-stats', [DashboardController::class, 'getStats']); // Dasbor untuk semua role
+    Route::post('/save-push-token', function (Illuminate\Http\Request $request) {
+        $user = auth()->user();
+        $user->update(['expo_push_token' => $request->token]);
+        return response()->json(['success' => true]);
+    });
     
+    Route::get('/donasi/pending-count', function () {
+        $count = \App\Models\Donasi::where('status', 'menunggu')->count();
+        return response()->json(['success' => true, 'count' => $count]);
+    });
     // ------------------------------------------------------------------------
     // 2. KHUSUS REMAJA, PANITIA, & DEVELOPER
     // ------------------------------------------------------------------------

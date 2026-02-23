@@ -9,6 +9,7 @@ use App\Models\TransaksiKeuangan;
 use App\Models\CampaignDonasi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class DonasiController extends Controller
 {
@@ -25,12 +26,10 @@ class DonasiController extends Controller
 
         $data = $request->all();
 
-        // -------------------------------------------------------------
-        // PERBAIKAN: Jika ID adalah 0 (Kas Umum), ubah jadi NULL agar MySQL tidak Error
+        // Jika ID adalah 0 (Kas Umum), ubah jadi NULL agar MySQL tidak Error
         if ($data['campaign_id'] == 0 || $data['campaign_id'] == '0') {
             $data['campaign_id'] = null;
         }
-        // -------------------------------------------------------------
 
         $data['bukti_transfer'] = $request->file('bukti_transfer')->store('bukti_donasi', 'public');
         
@@ -39,7 +38,30 @@ class DonasiController extends Controller
             $data['nama_donatur'] = 'Hamba Allah';
         }
 
-        Donasi::create($data);
+        // PERBAIKAN: SIMPAN KE DATABASE TERLEBIH DAHULU AGAR VARIABEL $donasi BISA DIPAKAI
+        $donasi = Donasi::create($data);
+
+        // KIRIM NOTIFIKASI KE HP PANITIA / DEVELOPER
+        $panitiaTokens = \App\Models\User::whereIn('role', ['panitia', 'developer'])
+                            ->whereNotNull('expo_push_token')
+                            ->pluck('expo_push_token')
+                            ->toArray();
+                            
+        if (count($panitiaTokens) > 0) {
+            $messages = [];
+            foreach ($panitiaTokens as $token) {
+                $messages[] = [
+                    "to" => $token,
+                    "sound" => "default",
+                    "title" => "💰 Donasi Baru Masuk!",
+                    "body" => "Ada donasi Rp " . number_format($donasi->nominal, 0, ',', '.') . " dari " . $donasi->nama_donatur . ". Segera verifikasi!",
+                    "data" => ["screen" => "DonationVerification"] // Untuk navigasi saat notif di-klik
+                ];
+            }
+
+            // Tembak server Expo dari Laravel
+            Http::post('https://exp.host/--/api/v2/push/send', $messages);
+        }
 
         return response()->json(['success' => true, 'message' => 'Alhamdulillah, konfirmasi donasi berhasil dikirim. Menunggu verifikasi Panitia.']);
     }
