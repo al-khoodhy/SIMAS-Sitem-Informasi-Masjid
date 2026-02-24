@@ -353,7 +353,7 @@ export default function Zakat() {
                                             {p.status === 'menunggu' ? (
                                                 <button onClick={() => { setSelectedPenyaluranId(p.id); setIsKonfirmasiModalOpen(true); }} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Konfirmasi</button>
                                             ) : (
-                                                p.foto_dokumentasi && <a href={`http://localhost:8000/storage/${p.foto_dokumentasi}`} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-bold hover:underline">Lihat Bukti</a>
+                                                p.foto_dokumentasi && <a href={`http://47.236.145.121/storage/${p.foto_dokumentasi}`} target="_blank" rel="noreferrer" className="text-blue-600 text-xs font-bold hover:underline">Lihat Bukti</a>
                                             )}
                                         </td>
                                     </tr>

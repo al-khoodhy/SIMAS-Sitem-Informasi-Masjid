@@ -184,7 +184,7 @@ export default function Berita() {
                         <div key={berita.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition duration-300">
                             <div className="h-48 bg-gray-100 relative group overflow-hidden">
                                 {berita.thumbnail ? (
-                                    <img src={`http://localhost:8000/storage/${berita.thumbnail}`} alt={berita.judul} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                    <img src={`http://47.236.145.121/storage/${berita.thumbnail}`} alt={berita.judul} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-400"><ImageIcon className="w-12 h-12 opacity-50" /></div>
                                 )}
@@ -255,7 +255,7 @@ export default function Berita() {
                         
                         <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-white">
                             {viewData.thumbnail && (
-                                <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 shadow-sm border border-gray-100"><img src={`http://localhost:8000/storage/${viewData.thumbnail}`} alt={viewData.judul} className="w-full h-full object-cover" /></div>
+                                <div className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 shadow-sm border border-gray-100"><img src={`http://47.236.145.121/storage/${viewData.thumbnail}`} alt={viewData.judul} className="w-full h-full object-cover" /></div>
                             )}
                             <div className="mb-4">{getStatusBadge(viewData.status)}</div>
                             <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-4 leading-tight">{viewData.judul}</h1>

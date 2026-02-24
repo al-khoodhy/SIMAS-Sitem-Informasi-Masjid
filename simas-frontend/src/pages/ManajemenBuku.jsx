@@ -95,7 +95,7 @@ export default function ManajemenBuku() {
                             <tr key={b.id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 flex items-center gap-4">
                                     <div className="w-10 h-14 bg-gray-200 rounded object-cover overflow-hidden flex-shrink-0">
-                                        {b.cover_image ? <img src={`http://localhost:8000/storage/${b.cover_image}`} className="w-full h-full object-cover"/> : <Book className="w-6 h-6 mx-auto mt-4 text-gray-400"/>}
+                                        {b.cover_image ? <img src={`http://47.236.145.121/storage/${b.cover_image}`} className="w-full h-full object-cover"/> : <Book className="w-6 h-6 mx-auto mt-4 text-gray-400"/>}
                                     </div>
                                     <span className="font-bold text-gray-800">{b.judul}</span>
                                 </td>

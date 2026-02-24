@@ -90,7 +90,7 @@ export default function VerifikasiDonasi() {
                                          <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold animate-pulse"><Clock className="w-3 h-3 mr-1 inline"/> Menunggu</span>}
                                     </td>
                                     <td className="px-4 py-3 text-center">
-                                        <button onClick={() => setPreviewImage(`http://localhost:8000/storage/${d.bukti_transfer}`)} className="text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-center w-full">
+                                        <button onClick={() => setPreviewImage(`http://47.236.145.121/storage/${d.bukti_transfer}`)} className="text-blue-600 hover:text-blue-800 hover:underline flex items-center justify-center w-full">
                                             <FileText className="w-4 h-4 mr-1"/> Cek Struk
                                         </button>
                                     </td>

@@ -21,8 +21,9 @@ return [
 
     'allowed_origins' => [
         'http://47.236.145.121',       // IP Server Anda (Akses via port 80)
-        'http://localhost:5173',       // Untuk kebutuhan testing lokal (Vite)
-        'http://localhost:3000',       // Untuk kebutuhan testing lokal (CRA)
+        // 'http://localhost:5173',       // Untuk kebutuhan testing lokal (Vite)
+        // 'http://localhost:3000',       // Untuk kebutuhan testing lokal (CRA)
+        // '0.0.0.0:8000',
     ],
     'allowed_origins_patterns' => [],
 

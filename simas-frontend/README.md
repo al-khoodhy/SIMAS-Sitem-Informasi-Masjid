@@ -91,7 +91,7 @@ cp .env.example .env
 Edit file `.env` dan sesuaikan URL backend:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api
+VITE_API_BASE_URL=http://47.236.145.121/api
 ```
 
 ---

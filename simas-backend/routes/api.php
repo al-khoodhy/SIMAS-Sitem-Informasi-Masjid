@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // 1. Rute Umum (Bisa diakses SIAPA SAJA yang sudah login)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::get('/dashboard-stats', [DashboardController::class, 'getStats']); // Dasbor untuk semua role
     Route::post('/save-push-token', function (Illuminate\Http\Request $request) {
@@ -58,7 +59,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // 2. KHUSUS REMAJA, PANITIA, & DEVELOPER
     // ------------------------------------------------------------------------
     Route::middleware('role:remaja,panitia,developer')->group(function () {
-        
+        // muzakki
+        Route::apiResource('/muzakki', \App\Http\Controllers\Api\MuzakkiController::class);
         // Inventaris
         Route::apiResource('/inventaris', InventarisController::class);
         
@@ -88,7 +90,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/summary', [KeuanganController::class, 'summary']);
         Route::get('/keuangan/export-pdf', [KeuanganController::class, 'exportPdf']);
         Route::apiResource('/keuangan', TransaksiKeuanganController::class); 
-        
+
         // Mustahik
         Route::post('/mustahik/mass-destroy', [MustahikController::class, 'massDestroy']);
         Route::apiResource('/mustahik', MustahikController::class);
@@ -105,8 +107,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/penyaluran-zakat', [ZakatController::class, 'storePenyaluran']);
         Route::put('/penyaluran-zakat/{id}', [ZakatController::class, 'updatePenyaluran']);
         Route::delete('/penyaluran-zakat/{id}', [ZakatController::class, 'destroyPenyaluran']);
-        Route::get('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'indexPenyaluran']);
-        Route::post('/penyaluran-zakat/{id}/konfirmasi', [\App\Http\Controllers\Api\ZakatController::class, 'konfirmasiPenyaluran']);
+        // Route::get('/penyaluran-zakat', [\App\Http\Controllers\Api\ZakatController::class, 'indexPenyaluran']);
+        // Route::post('/penyaluran-zakat/{id}/konfirmasi', [\App\Http\Controllers\Api\ZakatController::class, 'konfirmasiPenyaluran']);
         
         // Verifikasi Donasi / Crowdfunding
         Route::get('/donasi', [DonasiController::class, 'index']);

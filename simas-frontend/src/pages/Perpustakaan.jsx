@@ -117,7 +117,7 @@ export default function Perpustakaan() {
                             <div key={buku.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group flex flex-col">
                                 <div className="aspect-[3/4] bg-gray-100 relative overflow-hidden">
                                     {buku.cover_image ? (
-                                        <img src={`http://localhost:8000/storage/${buku.cover_image}`} alt={buku.judul} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                        <img src={`http://47.236.145.121/storage/${buku.cover_image}`} alt={buku.judul} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                                     ) : (
                                         <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-200/50"><ImageIcon className="w-12 h-12 mb-2 opacity-50" /><span className="text-xs font-bold uppercase tracking-widest">No Cover</span></div>
                                     )}

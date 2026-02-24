@@ -1,10 +1,11 @@
 // src/components/AdminLayout.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
-// OPTIMASI: Tambahkan BookOpen di sini
-import { LayoutDashboard, Wallet, Users, Newspaper, Package, LogOut, Menu, HandHeart, BookOpen } from 'lucide-react';
+import { 
+    LayoutDashboard, Wallet, Newspaper, Package, LogOut, 
+    Menu, HandHeart, BookOpen, HandCoins, Settings, UserCog, User 
+} from 'lucide-react';
 import api from '../api/axios';
-import { Settings, UserCog } from 'lucide-react';
 
 export default function AdminLayout() {
     const navigate = useNavigate();
@@ -44,6 +45,7 @@ export default function AdminLayout() {
         { title: 'Keuangan', icon: Wallet, path: '/keuangan', roles: ['developer', 'panitia'] },
         { title: 'Verifikasi Donasi', icon: Wallet, path: '/verifikasi-donasi', roles: ['developer', 'panitia'] },
         { title: 'Agenda', icon: Newspaper, path: '/agenda', roles: ['developer', 'panitia'] },
+        { title: 'Muzakki', icon: HandCoins, path: '/muzakki', roles: ['developer', 'panitia', 'remaja'] },
         { 
             title: user.role === 'remaja' ? 'Tugas Penyaluran' : 'Manajemen Zakat', 
             icon: HandHeart, 
@@ -52,25 +54,25 @@ export default function AdminLayout() {
         },
         { title: 'Manajemen Berita', icon: Newspaper, path: '/berita', roles: ['developer', 'panitia', 'remaja'] },
         { title: 'Inventaris', icon: Package, path: '/inventaris', roles: ['developer', 'panitia', 'remaja'] },
-        
-        // OPTIMASI: Tambahkan menu E-Library / Buku untuk panitia dan developer
         { title: 'E-Library / Buku', icon: BookOpen, path: '/manajemen-buku', roles: ['developer', 'panitia'] },
-        
         { title: 'Pengaturan Kas', icon: Settings, path: '/pengaturan-keuangan', roles: ['developer', 'panitia'] },
+        
+        // OPTIMASI: Menu Profil untuk semua akun agar mudah mengubah Avatar
+        { title: 'Profil Saya', icon: User, path: '/profile', roles: ['developer', 'panitia', 'remaja'] },
     ];
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen bg-gray-50 font-sans">
             {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r shadow-sm transition-all duration-300 flex flex-col`}>
-                <div className="p-4 border-b flex items-center justify-between">
-                    {isSidebarOpen && <span className="font-bold text-primary text-xl tracking-tight">SIMAS</span>}
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-1 hover:bg-gray-100 rounded">
-                        <Menu className="w-6 h-6 text-gray-600" />
+            <aside className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 shadow-sm transition-all duration-300 flex flex-col z-20`}>
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                    {isSidebarOpen && <span className="font-extrabold text-primary text-2xl tracking-tight">SIMAS</span>}
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-1.5 hover:bg-gray-100 rounded-lg transition text-gray-500">
+                        <Menu className="w-6 h-6" />
                     </button>
                 </div>
                 
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto custom-scrollbar">
                     {menuItems.map((item) => {
                         // Sembunyikan menu jika role user tidak ada di array 'roles'
                         if (!item.roles.includes(user.role)) return null;
@@ -78,37 +80,55 @@ export default function AdminLayout() {
                         const isActive = location.pathname === item.path;
                         return (
                             <Link key={item.path} to={item.path} 
-                                className={`flex items-center space-x-3 p-3 rounded-lg transition ${isActive ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-                                <item.icon className="w-5 h-5" />
-                                {isSidebarOpen && <span className="font-medium">{item.title}</span>}
+                                className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 ${isActive ? 'bg-primary text-white shadow-md shadow-primary/20 font-bold' : 'text-gray-600 hover:bg-green-50 hover:text-primary font-medium'}`}>
+                                <item.icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                                {isSidebarOpen && <span>{item.title}</span>}
                             </Link>
                         );
                     })}
                 </nav>
 
-                <div className="p-4 border-t">
-                    <button onClick={handleLogout} className="flex items-center space-x-3 p-3 w-full rounded-lg text-red-600 hover:bg-red-50 transition">
+                <div className="p-4 border-t border-gray-100">
+                    <button onClick={handleLogout} className="flex items-center justify-center space-x-3 p-3 w-full rounded-xl text-red-600 hover:bg-red-50 hover:text-red-700 transition font-bold">
                         <LogOut className="w-5 h-5" />
-                        {isSidebarOpen && <span className="font-medium">Keluar</span>}
+                        {isSidebarOpen && <span>Keluar</span>}
                     </button>
                 </div>
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col overflow-hidden">
-                {/* Header */}
-                <header className="bg-white border-b shadow-sm p-4 flex justify-end items-center">
-                    <div className="text-right mr-3">
-                        <p className="text-sm font-bold text-gray-800">{user.name}</p>
-                        <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+            <main className="flex-1 flex flex-col overflow-hidden bg-gray-50/50">
+                {/* Header (Top Bar) */}
+                <header className="bg-white border-b border-gray-200 shadow-sm px-6 py-3 flex justify-between items-center z-10">
+                    <div className="text-gray-500 font-medium text-sm hidden md:block">
+                        {/* Menampilkan tanggal hari ini */}
+                        {new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date())}
                     </div>
-                    <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">
-                        {user.name.charAt(0)}
-                    </div>
+
+                    {/* Area Profil (Bisa diklik menuju pengaturan profil) */}
+                    <Link to="/profile" className="flex items-center hover:bg-gray-50 p-2 rounded-xl transition cursor-pointer ml-auto">
+                        <div className="text-right mr-3 hidden sm:block">
+                            <p className="text-sm font-bold text-gray-800 leading-tight">{user.name}</p>
+                            <p className="text-xs font-semibold text-primary capitalize bg-green-50 px-2 py-0.5 rounded-md inline-block mt-1">{user.role}</p>
+                        </div>
+                        
+                        {/* Render Avatar jika ada, jika tidak render inisial */}
+                        {user.avatar ? (
+                            <img 
+                                src={`http://localhost:8000/storage/${user.avatar}`} 
+                                alt="Profil" 
+                                className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm"
+                            />
+                        ) : (
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold border border-primary/20 shadow-sm text-lg uppercase">
+                                {user.name.charAt(0)}
+                            </div>
+                        )}
+                    </Link>
                 </header>
                 
                 {/* Dinamis Konten (Outlet) */}
-                <div className="flex-1 overflow-y-auto p-6">
+                <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
                     <Outlet /> 
                 </div>
             </main>

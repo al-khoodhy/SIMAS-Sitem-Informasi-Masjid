@@ -67,6 +67,9 @@ class UserController extends Controller
         return response()->json(['success' => true, 'message' => 'Data pengguna berhasil diperbarui', 'data' => $user]);
     }
 
+    
+
+
     // Menghapus pengguna
     public function destroy($id)
     {
@@ -83,26 +86,35 @@ class UserController extends Controller
     // Fungsi Khusus Update Profil Sendiri
     public function updateProfile(Request $request)
     {
-        $user = Auth::user(); // Ambil data user yang sedang login
+        $user = \Illuminate\Support\Facades\Auth::user();
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'password' => 'nullable|string|min:6' // Password opsional
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
-        $user->name = $request->name;
+        $data = $request->only(['name', 'email']);
 
-        // Jika form password diisi, enkripsi dan simpan password baru
         if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
+            $data['password'] = bcrypt($request->password);
         }
 
-        $user->save();
+        if ($request->hasFile('avatar')) {
+            // Hapus avatar lama jika ada
+            if ($user->avatar) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $user->update($data);
 
         return response()->json([
             'success' => true, 
             'message' => 'Profil berhasil diperbarui', 
-            'data' => $user
+            'user' => $user
         ]);
     }
 }

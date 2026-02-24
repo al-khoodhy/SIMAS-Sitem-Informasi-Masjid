@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // 1. OPTIMASI CODE SPLITTING: Semua Halaman Dibuat Lazy
 // Komponen Layout tetap di-import biasa karena digunakan langsung di App.jsx
 import AdminLayout from './components/AdminLayout';
+import Profile from './pages/Profile';
 
 // Halaman Publik (Di-lazy load)
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
@@ -20,6 +21,7 @@ const ManajemenPengguna = React.lazy(() => import('./pages/ManajemenPengguna'));
 const Keuangan = React.lazy(() => import('./pages/Keuangan'));
 const Agenda = React.lazy(() => import('./pages/Agenda'));
 const Zakat = React.lazy(() => import('./pages/Zakat'));
+const Muzakki = React.lazy(() => import('./pages/Muzakki'));
 const Berita = React.lazy(() => import('./pages/Berita'));
 const Inventaris = React.lazy(() => import('./pages/Inventaris'));
 const ManajemenBuku = React.lazy(() => import('./pages/ManajemenBuku'));
@@ -55,9 +57,11 @@ function App() {
           ========================== */}
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/pengguna" element={<ManajemenPengguna />} />
             <Route path="/keuangan" element={<Keuangan />} />
             <Route path="/agenda" element={<Agenda />} />
+            <Route path="/muzakki" element={<Muzakki />} /> 
             <Route path="/zakat" element={<Zakat />} />        
             <Route path="/berita" element={<Berita />} />
             <Route path="/inventaris" element={<Inventaris />} />

@@ -24,7 +24,7 @@ export default function BeritaSection({ beritaData }) {
                             <Link to={`/berita/${b.id}`} key={b.id} className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition group flex flex-col">
                                 <div className="h-48 bg-gray-200 overflow-hidden relative">
                                     {b.thumbnail ? (
-                                        <img src={`http://localhost:8000/storage/${b.thumbnail}`} alt={b.judul} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                                        <img src={`http://47.236.145.121/storage/${b.thumbnail}`} alt={b.judul} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-100"><Calendar className="w-10 h-10 text-gray-300" /></div>
                                     )}

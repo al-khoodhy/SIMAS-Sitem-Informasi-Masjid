@@ -46,7 +46,7 @@ export default function NewsDetail() {
 
                 {berita.thumbnail && (
                     <div className="w-full h-64 md:h-96 rounded-2xl overflow-hidden mb-8 shadow-md">
-                        <img src={`http://localhost:8000/storage/${berita.thumbnail}`} alt={berita.judul} className="w-full h-full object-cover" />
+                        <img src={`http://47.236.145.121/storage/${berita.thumbnail}`} alt={berita.judul} className="w-full h-full object-cover" />
                     </div>
                 )}
 
