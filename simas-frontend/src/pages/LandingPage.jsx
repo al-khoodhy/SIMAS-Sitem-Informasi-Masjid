@@ -1,3 +1,4 @@
+// src/pages/LandingPage.jxs
 import React, { useState, useEffect, Suspense } from 'react';
 import api from '../api/axios';
 

@@ -2,8 +2,23 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { 
-    LayoutDashboard, Wallet, Newspaper, Package, LogOut, 
-    Menu, HandHeart, BookOpen, HandCoins, Settings, UserCog, User 
+    LayoutDashboard, 
+    Wallet, 
+    Newspaper, 
+    Package, 
+    LogOut, 
+    Menu, 
+    HandHeart, 
+    BookOpen, 
+    HandCoins, 
+    Settings, 
+    UserCog, 
+    User, 
+    Image,
+    BadgeCheck,
+    CalendarDays,
+    Users,
+    Megaphone
 } from 'lucide-react';
 import api from '../api/axios';
 
@@ -40,25 +55,123 @@ export default function AdminLayout() {
 
     // RBAC: Menentukan menu berdasarkan Role
     const menuItems = [
-        { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', roles: ['developer', 'panitia', 'remaja'] },
-        { title: 'Manajemen Pengguna', icon: UserCog, path: '/pengguna', roles: ['developer'] },
-        { title: 'Keuangan', icon: Wallet, path: '/keuangan', roles: ['developer', 'panitia'] },
-        { title: 'Verifikasi Donasi', icon: Wallet, path: '/verifikasi-donasi', roles: ['developer', 'panitia'] },
-        { title: 'Agenda', icon: Newspaper, path: '/agenda', roles: ['developer', 'panitia'] },
-        { title: 'Muzakki', icon: HandCoins, path: '/muzakki', roles: ['developer', 'panitia', 'remaja'] },
+
+        // =========================
+        // DASHBOARD
+        // =========================
         { 
-            title: user.role === 'remaja' ? 'Tugas Penyaluran' : 'Manajemen Zakat', 
+            title: 'Dashboard', 
+            icon: LayoutDashboard, 
+            path: '/dashboard', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
+    
+        // =========================
+        // OPERASIONAL
+        // =========================
+        { 
+            title: user.role === 'remaja' ? 'Tugas Penyaluran' : 'Manajemen Zakat',
             icon: HandHeart, 
             path: '/zakat', 
             roles: ['developer', 'panitia', 'remaja'] 
         },
-        { title: 'Manajemen Berita', icon: Newspaper, path: '/berita', roles: ['developer', 'panitia', 'remaja'] },
-        { title: 'Inventaris', icon: Package, path: '/inventaris', roles: ['developer', 'panitia', 'remaja'] },
-        { title: 'E-Library / Buku', icon: BookOpen, path: '/manajemen-buku', roles: ['developer', 'panitia'] },
-        { title: 'Pengaturan Kas', icon: Settings, path: '/pengaturan-keuangan', roles: ['developer', 'panitia'] },
-        
-        // OPTIMASI: Menu Profil untuk semua akun agar mudah mengubah Avatar
-        { title: 'Profil Saya', icon: User, path: '/profile', roles: ['developer', 'panitia', 'remaja'] },
+        { 
+            title: 'Data Muzakki', 
+            icon: HandCoins, 
+            path: '/muzakki', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
+        { 
+            title: 'Verifikasi Donasi', 
+            icon: BadgeCheck, 
+            path: '/verifikasi-donasi', 
+            roles: ['developer', 'panitia'] 
+        },
+        { 
+            title: 'Keuangan', 
+            icon: Wallet, 
+            path: '/keuangan', 
+            roles: ['developer', 'panitia'] 
+        },
+    
+        // =========================
+        // DATA & ASET
+        // =========================
+        { 
+            title: 'Inventaris', 
+            icon: Package, 
+            path: '/inventaris', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
+        { 
+            title: 'E-Library', 
+            icon: BookOpen, 
+            path: '/manajemen-buku', 
+            roles: ['developer', 'panitia'] 
+        },
+    
+        // =========================
+        // PUBLIKASI
+        // =========================
+        { 
+            title: 'Agenda', 
+            icon: CalendarDays, 
+            path: '/agenda', 
+            roles: ['developer', 'panitia'] 
+        },
+        { 
+            title: 'Manajemen Berita', 
+            icon: Newspaper, 
+            path: '/berita', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
+        { 
+            title: 'Manajemen Galeri', 
+            icon: Image, 
+            path: '/manajemen-galeri', 
+            roles: ['developer', 'panitia'] 
+        },
+    
+        // =========================
+        // ADMINISTRASI
+        // =========================
+        { 
+            title: 'Manajemen Pengguna', 
+            icon: Users, 
+            path: '/pengguna', 
+            roles: ['developer'] 
+        },
+        { 
+            title: 'Backup Database', 
+            icon: Megaphone, 
+            path: '/backup-database', 
+            roles: ['developer'] 
+        },
+        { 
+            title: 'Pengaturan Sistem', 
+            icon: Settings, 
+            path: '/pengaturan-keuangan', 
+            roles: ['developer', 'panitia'] 
+        },
+    
+        // =========================
+        // PROFIL
+        // =========================
+        { 
+            title: 'Profil Saya', 
+            icon: User, 
+            path: '/profile', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
+                // =========================
+        // PROFIL
+        // =========================
+        { 
+            title: 'Pengumuman', 
+            icon: Megaphone, 
+            path: '/manajemen-pengumuman', 
+            roles: ['developer', 'panitia', 'remaja'] 
+        },
     ];
 
     return (
@@ -115,7 +228,7 @@ export default function AdminLayout() {
                         {/* Render Avatar jika ada, jika tidak render inisial */}
                         {user.avatar ? (
                             <img 
-                                src={`http://localhost:8000/storage/${user.avatar}`} 
+                                src={`http://47.236.145.121/storage/${user.avatar}`} 
                                 alt="Profil" 
                                 className="w-10 h-10 rounded-full object-cover border-2 border-primary shadow-sm"
                             />

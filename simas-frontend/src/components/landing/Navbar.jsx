@@ -1,5 +1,6 @@
+// src/components/landing/Navbar.jsx
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Megaphone } from 'lucide-react'; // Tambahkan icon Megaphone
 
 export default function Navbar() {
     return (
@@ -16,8 +17,12 @@ export default function Navbar() {
                         <a href="#tentang" className="hover:text-primary transition">Tentang</a>
                         <a href="#program" className="hover:text-primary transition">Program</a>
                         <a href="#galeri" className="hover:text-primary transition">Galeri</a>
-                        <Link to="/perpustakaan" className="hover:text-primary transition text-primary font-bold">
+                        <Link to="/perpustakaan" className="hover:text-primary transition font-bold">
                             📚 Perpustakaan
+                        </Link>
+                        {/* 👇 TAMBAHKAN MENU PENGUMUMAN DI SINI 👇 */}
+                        <Link to="/pengumuman" className="hover:text-primary transition text-primary font-bold flex items-center">
+                            <Megaphone className="w-4 h-4 mr-1" /> Pengumuman
                         </Link>
                     </div>
                     <div>

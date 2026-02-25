@@ -8,7 +8,7 @@ export default function Profile() {
     const [email, setEmail] = useState(user?.email || '');
     const [password, setPassword] = useState('');
     const [avatar, setAvatar] = useState(null);
-    const [avatarPreview, setAvatarPreview] = useState(user?.avatar ? `http://localhost:8000/storage/${user.avatar}` : null);
+    const [avatarPreview, setAvatarPreview] = useState(user?.avatar ? `http://47.236.145.121/storage/${user.avatar}` : null);
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
 

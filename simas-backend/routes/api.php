@@ -22,6 +22,9 @@ use App\Http\Controllers\Api\TransaksiKeuanganController;
 | Rute Publik (Tanpa perlu login)
 |--------------------------------------------------------------------------
 */
+Route::get('/public/pengumuman', [\App\Http\Controllers\Api\PengumumanController::class, 'indexPublic']);
+Route::get('/public/pengumuman/{slug}', [\App\Http\Controllers\Api\PengumumanController::class, 'showPublic']);
+Route::get('/public/gallery', [\App\Http\Controllers\Api\GalleryController::class, 'index']);
 Route::get('/public/buku', [\App\Http\Controllers\Api\BukuController::class, 'indexPublic']);
 Route::get('/public/buku/filters', [\App\Http\Controllers\Api\BukuController::class, 'getFilters']);
 Route::get('/public/landing', [LandingController::class, 'index']);
@@ -77,7 +80,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // 3. KHUSUS PANITIA & DEVELOPER (Level Manajemen)
     // ------------------------------------------------------------------------
     Route::middleware('role:panitia,developer')->group(function () {
-        
+        // pengumuman
+        Route::apiResource('/pengumuman', \App\Http\Controllers\Api\PengumumanController::class);
+        // Galeri
+        Route::post('/gallery/{id}', [\App\Http\Controllers\Api\GalleryController::class, 'update']);
+        Route::delete('/galeri/{id}', [\App\Http\Controllers\Api\GaleriController::class, 'destroy']);
         // Berita (Approval Redaksi) -> Harus diletakkan di luar jangkauan Remaja
         Route::post('/berita/{id}/approve', [BeritaController::class, 'approve']);
         Route::post('/berita/{id}/reject', [BeritaController::class, 'reject']);
@@ -129,6 +136,14 @@ Route::middleware('auth:sanctum')->group(function () {
         // Manajemen Akun Pengurus
         Route::apiResource('/users', UserController::class);
         
+        Route::get('/database/tables', [\App\Http\Controllers\Api\BackupController::class, 'getTables']);
+        Route::post('/database/manual-backup', [\App\Http\Controllers\Api\BackupController::class, 'manualBackup']);
+        Route::get('/database/backups', [\App\Http\Controllers\Api\BackupController::class, 'listBackups']);
+        Route::get('/database/backups/{filename}/download', [\App\Http\Controllers\Api\BackupController::class, 'downloadBackup']);
+        Route::delete('/database/backups/{filename}', [\App\Http\Controllers\Api\BackupController::class, 'deleteBackup']);
+        
+        Route::get('/database/schedule', [\App\Http\Controllers\Api\BackupController::class, 'getSchedule']);
+        Route::post('/database/schedule', [\App\Http\Controllers\Api\BackupController::class, 'saveSchedule']);
         // Catatan: Tidak perlu mendeklarasikan ulang Hapus Keuangan/Berita di sini, 
         // karena rute apiResource di grup 'panitia,developer' sudah mencakup Developer juga.
         // Jika ingin hanya Developer yang bisa hapus, logic-nya diamankan dari Controller, bukan Route.

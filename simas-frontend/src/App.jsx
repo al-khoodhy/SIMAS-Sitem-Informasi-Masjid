@@ -6,8 +6,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Komponen Layout tetap di-import biasa karena digunakan langsung di App.jsx
 import AdminLayout from './components/AdminLayout';
 import Profile from './pages/Profile';
+import PengumumanPage from './pages/PengumumanPage';
+import ManajemenPengumuman from './pages/ManajemenPengumuman';
+import PengumumanDetail from './pages/PengumumanDetail';
+import DatabaseBackup from './pages/DatabaseBackup';
 
 // Halaman Publik (Di-lazy load)
+const ManajemenGaleri = React.lazy(() => import('./pages/ManajemenGaleri'));
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const AllAgenda = React.lazy(() => import('./pages/AllAgenda'));
 const AllNews = React.lazy(() => import('./pages/AllNews'));
@@ -44,6 +49,8 @@ function App() {
               PUBLIC ROUTES
           ========================== */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/pengumuman" element={<PengumumanPage />} />
+          <Route path="/pengumuman/:slug" element={<PengumumanDetail />} />
           <Route path="/agenda-lengkap" element={<AllAgenda />} />
           <Route path="/berita-lengkap" element={<AllNews />} />
           <Route path="/berita/:id" element={<NewsDetail />} />
@@ -65,11 +72,13 @@ function App() {
             <Route path="/zakat" element={<Zakat />} />        
             <Route path="/berita" element={<Berita />} />
             <Route path="/inventaris" element={<Inventaris />} />
-            
+            <Route path="/manajemen-galeri" element={<ManajemenGaleri />} />
+
             {/* OPTIMASI: Rute E-Library / Manajemen Buku Admin */}
             <Route path="/manajemen-buku" element={<ManajemenBuku />} />
-            
+            <Route path="/manajemen-pengumuman" element={<ManajemenPengumuman />} />
             <Route path="/verifikasi-donasi" element={<VerifikasiDonasi />} />
+            <Route path="/backup-database" element={<DatabaseBackup />} />
             <Route path="/pengaturan-keuangan" element={<PengaturanKeuangan />} />
           </Route>
         </Routes>
